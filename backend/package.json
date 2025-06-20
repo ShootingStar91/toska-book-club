@@ -6,7 +6,12 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "dev": "tsx watch src/server.ts"
+    "dev": "tsx watch src/server.ts",
+    "migrate:up": "tsx src/migrate.ts up",
+    "migrate:down": "tsx src/migrate.ts down",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
