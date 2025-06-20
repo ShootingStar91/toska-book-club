@@ -3,6 +3,8 @@ import cors from "@fastify/cors";
 import { helloworldRoute } from "./routes/helloworld/route";
 import { authRoute } from "./routes/auth/route";
 import { votingCyclesRoute } from "./routes/voting-cycles/route";
+import { bookSuggestionsRoute } from "./routes/book-suggestions/route";
+import { votesRoute } from "./routes/votes/route";
 
 const server = fastify({ logger: true });
 
@@ -13,6 +15,8 @@ server.register(cors, {
 server.register(helloworldRoute);
 server.register(authRoute, { prefix: '/auth' });
 server.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+server.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+server.register(votesRoute, { prefix: '/votes' });
 
 const start = async () => {
   try {
