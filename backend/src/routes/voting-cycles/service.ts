@@ -2,14 +2,12 @@ import { db } from '../../database';
 import { NewVotingCycle } from '../../database';
 
 export interface CreateVotingCycleRequest {
-  name: string;
   suggestionDeadline: string; // ISO date string
   votingDeadline: string; // ISO date string
 }
 
 export interface VotingCycleResponse {
   id: string;
-  name: string;
   suggestionDeadline: string;
   votingDeadline: string;
   status: 'suggesting' | 'voting' | 'completed';
@@ -18,11 +16,11 @@ export interface VotingCycleResponse {
 }
 
 export async function createVotingCycle(data: CreateVotingCycleRequest): Promise<VotingCycleResponse> {
-  const { name, suggestionDeadline, votingDeadline } = data;
+  const { suggestionDeadline, votingDeadline } = data;
 
   // Validate required fields
-  if (!name || !suggestionDeadline || !votingDeadline) {
-    throw new Error('Name, suggestion deadline, and voting deadline are required');
+  if (!suggestionDeadline || !votingDeadline) {
+    throw new Error('Suggestion deadline and voting deadline are required');
   }
 
   // Parse and validate dates
@@ -46,20 +44,8 @@ export async function createVotingCycle(data: CreateVotingCycleRequest): Promise
     throw new Error('Voting deadline must be after suggestion deadline');
   }
 
-  // Check if name already exists
-  const existingCycle = await db
-    .selectFrom('voting_cycles')
-    .select('id')
-    .where('name', '=', name)
-    .executeTakeFirst();
-
-  if (existingCycle) {
-    throw new Error('A voting cycle with this name already exists');
-  }
-
   // Create the voting cycle
   const newCycle: NewVotingCycle = {
-    name,
     suggestion_deadline: suggestionDate,
     voting_deadline: votingDate,
     status: 'suggesting',
@@ -73,7 +59,6 @@ export async function createVotingCycle(data: CreateVotingCycleRequest): Promise
 
   return {
     id: createdCycle.id,
-    name: createdCycle.name,
     suggestionDeadline: createdCycle.suggestion_deadline.toISOString(),
     votingDeadline: createdCycle.voting_deadline.toISOString(),
     status: createdCycle.status,
@@ -91,7 +76,6 @@ export async function getAllVotingCycles(): Promise<VotingCycleResponse[]> {
 
   return cycles.map(cycle => ({
     id: cycle.id,
-    name: cycle.name,
     suggestionDeadline: cycle.suggestion_deadline.toISOString(),
     votingDeadline: cycle.voting_deadline.toISOString(),
     status: cycle.status,
@@ -114,7 +98,6 @@ export async function getCurrentVotingCycle(): Promise<VotingCycleResponse | nul
 
   return {
     id: cycle.id,
-    name: cycle.name,
     suggestionDeadline: cycle.suggestion_deadline.toISOString(),
     votingDeadline: cycle.voting_deadline.toISOString(),
     status: cycle.status,

@@ -38,7 +38,6 @@ describe('Book Suggestions Routes', () => {
     return await testDb
       .insertInto('voting_cycles')
       .values({
-        name: 'Test Cycle',
         suggestion_deadline: tomorrow,
         voting_deadline: dayAfterTomorrow,
         status,
@@ -226,7 +225,6 @@ describe('Book Suggestions Routes', () => {
       await testDb
         .insertInto('voting_cycles')
         .values({
-          name: 'Past Deadline Cycle',
           suggestion_deadline: yesterday,
           voting_deadline: tomorrow,
           status: 'suggesting',

@@ -38,7 +38,6 @@ describe('Votes Routes', () => {
     return await testDb
       .insertInto('voting_cycles')
       .values({
-        name: 'Test Cycle',
         suggestion_deadline: tomorrow,
         voting_deadline: dayAfterTomorrow,
         status,
@@ -247,7 +246,6 @@ describe('Votes Routes', () => {
       const cycle = await testDb
         .insertInto('voting_cycles')
         .values({
-          name: 'Past Deadline Cycle',
           suggestion_deadline: twoDaysAgo,
           voting_deadline: yesterday,
           status: 'voting',
@@ -298,14 +296,13 @@ describe('Votes Routes', () => {
     it('should return 400 for book suggestions from different cycle', async () => {
       const { user, token } = await createUserAndToken();
       
-      // Create two cycles with different names to avoid unique constraint
+      // Create two cycles
       const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
       const dayAfterTomorrow = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
       const cycle1 = await testDb
         .insertInto('voting_cycles')
         .values({
-          name: 'Test Cycle 1',
           suggestion_deadline: tomorrow,
           voting_deadline: dayAfterTomorrow,
           status: 'voting',
@@ -316,7 +313,6 @@ describe('Votes Routes', () => {
       const cycle2 = await testDb
         .insertInto('voting_cycles')
         .values({
-          name: 'Test Cycle 2',
           suggestion_deadline: tomorrow,
           voting_deadline: dayAfterTomorrow,
           status: 'voting',

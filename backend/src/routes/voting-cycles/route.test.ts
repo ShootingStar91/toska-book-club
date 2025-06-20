@@ -45,7 +45,6 @@ describe('Voting Cycles Routes', () => {
         .post('/voting-cycles')
         .set('Authorization', `Bearer ${token}`)
         .send({
-          name: 'Spring 2024 Selection',
           suggestionDeadline: tomorrow.toISOString(),
           votingDeadline: dayAfterTomorrow.toISOString()
         });
@@ -53,7 +52,6 @@ describe('Voting Cycles Routes', () => {
       expect(response.status).toBe(201);
       expect(response.body).toMatchObject({
         id: expect.any(String),
-        name: 'Spring 2024 Selection',
         status: 'suggesting',
         suggestionDeadline: expect.any(String),
         votingDeadline: expect.any(String),
@@ -78,7 +76,6 @@ describe('Voting Cycles Routes', () => {
         .post('/voting-cycles')
         .set('Authorization', `Bearer ${token}`)
         .send({
-          name: 'Spring 2024 Selection',
           suggestionDeadline: tomorrow.toISOString(),
           votingDeadline: dayAfterTomorrow.toISOString()
         });
@@ -97,7 +94,6 @@ describe('Voting Cycles Routes', () => {
       const response = await request(app.server)
         .post('/voting-cycles')
         .send({
-          name: 'Spring 2024 Selection',
           suggestionDeadline: new Date().toISOString(),
           votingDeadline: new Date().toISOString()
         });
@@ -119,7 +115,6 @@ describe('Voting Cycles Routes', () => {
         .post('/voting-cycles')
         .set('Authorization', `Bearer ${token}`)
         .send({
-          name: 'Spring 2024 Selection'
           // Missing deadlines
         });
 
@@ -144,7 +139,6 @@ describe('Voting Cycles Routes', () => {
         .post('/voting-cycles')
         .set('Authorization', `Bearer ${token}`)
         .send({
-          name: 'Invalid Cycle',
           suggestionDeadline: yesterday.toISOString(),
           votingDeadline: tomorrow.toISOString()
         });
@@ -169,7 +163,6 @@ describe('Voting Cycles Routes', () => {
         .post('/voting-cycles')
         .set('Authorization', `Bearer ${token}`)
         .send({
-          name: 'Invalid Cycle',
           suggestionDeadline: tomorrow.toISOString(),
           votingDeadline: today.toISOString()
         });

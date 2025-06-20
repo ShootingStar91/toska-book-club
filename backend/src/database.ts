@@ -20,7 +20,6 @@ export interface UsersTable {
 
 export interface VotingCyclesTable {
   id: Generated<string>;
-  name: string;
   suggestion_deadline: Date;
   voting_deadline: Date;
   status: Generated<'suggesting' | 'voting' | 'completed'>;

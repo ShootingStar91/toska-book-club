@@ -9,14 +9,12 @@ describe('Voting Cycles Service', () => {
       const dayAfterTomorrow = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
       const result = await createVotingCycle({
-        name: 'Test Cycle',
         suggestionDeadline: tomorrow.toISOString(),
         votingDeadline: dayAfterTomorrow.toISOString()
       });
 
       expect(result).toMatchObject({
         id: expect.any(String),
-        name: 'Test Cycle',
         status: 'suggesting',
         suggestionDeadline: expect.any(String),
         votingDeadline: expect.any(String),
@@ -32,7 +30,6 @@ describe('Voting Cycles Service', () => {
         .executeTakeFirst();
 
       expect(dbCycle).toBeDefined();
-      expect(dbCycle?.name).toBe('Test Cycle');
       expect(dbCycle?.status).toBe('suggesting');
     });
 
@@ -41,7 +38,6 @@ describe('Voting Cycles Service', () => {
       const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
       await expect(createVotingCycle({
-        name: 'Invalid Cycle',
         suggestionDeadline: yesterday.toISOString(),
         votingDeadline: tomorrow.toISOString()
       })).rejects.toThrow('Suggestion deadline must be in the future');
@@ -52,30 +48,11 @@ describe('Voting Cycles Service', () => {
       const today = new Date(Date.now() + 12 * 60 * 60 * 1000);
 
       await expect(createVotingCycle({
-        name: 'Invalid Cycle',
         suggestionDeadline: tomorrow.toISOString(),
         votingDeadline: today.toISOString()
       })).rejects.toThrow('Voting deadline must be after suggestion deadline');
     });
 
-    it('should reject duplicate names', async () => {
-      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      const dayAfterTomorrow = new Date(Date.now() + 48 * 60 * 60 * 1000);
-
-      // Create first cycle
-      await createVotingCycle({
-        name: 'Duplicate Name',
-        suggestionDeadline: tomorrow.toISOString(),
-        votingDeadline: dayAfterTomorrow.toISOString()
-      });
-
-      // Try to create another with same name
-      await expect(createVotingCycle({
-        name: 'Duplicate Name',
-        suggestionDeadline: tomorrow.toISOString(),
-        votingDeadline: dayAfterTomorrow.toISOString()
-      })).rejects.toThrow('A voting cycle with this name already exists');
-    });
   });
 
   describe('getAllVotingCycles', () => {
@@ -90,21 +67,19 @@ describe('Voting Cycles Service', () => {
       const dayAfterTomorrow = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
       await createVotingCycle({
-        name: 'First Cycle',
         suggestionDeadline: tomorrow.toISOString(),
         votingDeadline: dayAfterTomorrow.toISOString()
       });
 
       await createVotingCycle({
-        name: 'Second Cycle',
         suggestionDeadline: tomorrow.toISOString(),
         votingDeadline: dayAfterTomorrow.toISOString()
       });
 
       const result = await getAllVotingCycles();
       expect(result).toHaveLength(2);
-      expect(result[0].name).toBe('Second Cycle'); // Most recent first
-      expect(result[1].name).toBe('First Cycle');
+      // Most recent first (ordered by created_at desc)
+      expect(new Date(result[0].createdAt).getTime()).toBeGreaterThan(new Date(result[1].createdAt).getTime());
     });
   });
 
@@ -119,7 +94,6 @@ describe('Voting Cycles Service', () => {
       const dayAfterTomorrow = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
       const cycle = await createVotingCycle({
-        name: 'Active Cycle',
         suggestionDeadline: tomorrow.toISOString(),
         votingDeadline: dayAfterTomorrow.toISOString()
       });
@@ -127,7 +101,6 @@ describe('Voting Cycles Service', () => {
       const result = await getCurrentVotingCycle();
       expect(result).toMatchObject({
         id: cycle.id,
-        name: 'Active Cycle',
         status: 'suggesting'
       });
     });
