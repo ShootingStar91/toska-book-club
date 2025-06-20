@@ -10,7 +10,10 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - DATABASE_URL=postgres://postgres:password@database:5432/toska_book_club
     command: npm run dev
+    depends_on:
+      - database
 
   frontend:
     build:
@@ -24,3 +27,17 @@ services:
     environment:
       - NODE_ENV=development
     command: npm run dev -- --host
+
+  database:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=toska_book_club
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
