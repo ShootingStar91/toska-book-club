@@ -12,7 +12,7 @@ export async function authRoute(fastify: FastifyInstance) {
       
       const result = await authenticateUser(username, password);
       return reply.status(200).send(result);
-    } catch (error) {
+    } catch {
       return reply.status(401).send({ error: 'Invalid credentials' });
     }
   });
