@@ -50,7 +50,21 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
 
   // Determine winner(s) - books with the highest vote count
   const maxVotes = sortedResults.length > 0 ? sortedResults[0].voteCount : 0;
-  const winners = sortedResults.filter(result => result.voteCount === maxVotes && result.voteCount > 0);
+  const tiedResults = sortedResults.filter(result => result.voteCount === maxVotes && result.voteCount > 0);
+  
+  // Function to determine winner from tied results using UUID-based selection
+  const determineWinner = (tiedResults: typeof sortedResults) => {
+    if (tiedResults.length <= 1) return tiedResults[0] || null;
+    
+    // Sort by UUID to get deterministic "random" winner
+    const sortedByUuid = [...tiedResults].sort((a, b) => 
+      a.bookSuggestionId.localeCompare(b.bookSuggestionId)
+    );
+    return sortedByUuid[0];
+  };
+  
+  const actualWinner = determineWinner(tiedResults);
+  const isTie = tiedResults.length > 1;
 
   const totalVotes = sortedResults.reduce((sum: number, result) => sum + result.voteCount, 0);
 
@@ -78,7 +92,8 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
           
           <div className="space-y-4">
             {sortedResults.map((result, index) => {
-              const isWinner = winners.some(w => w.bookSuggestionId === result.bookSuggestionId);
+              const isActualWinner = actualWinner && result.bookSuggestionId === actualWinner.bookSuggestionId;
+              const isTiedForFirst = tiedResults.some(w => w.bookSuggestionId === result.bookSuggestionId);
               const suggestion = result.suggestion!;
               const percentage = totalVotes > 0 ? Math.round((result.voteCount / totalVotes) * 100) : 0;
               
@@ -86,13 +101,15 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
                 <div
                   key={result.bookSuggestionId}
                   className={`relative p-4 rounded-lg border transition-all ${
-                    isWinner
+                    isActualWinner
                       ? 'border-yellow-400 bg-yellow-400/10 shadow-lg'
-                      : 'border-gray-600 bg-gray-700/50'
+                      : isTiedForFirst && isTie
+                        ? 'border-orange-400/70 bg-orange-400/5'
+                        : 'border-gray-600 bg-gray-700/50'
                   }`}
                 >
-                  {/* Winner crown/indicator */}
-                  {isWinner && (
+                  {/* Winner crown/indicator - only for actual winner */}
+                  {isActualWinner && (
                     <div className="absolute -top-2 -right-2">
                       <div className="bg-yellow-400 text-gray-900 rounded-full p-2">
                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -110,18 +127,23 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <span className={`text-lg font-bold ${
-                          isWinner ? 'text-yellow-400' : 'text-orange-400'
+                          isActualWinner ? 'text-yellow-400' : 'text-orange-400'
                         }`}>
                           #{index + 1}
                         </span>
                         <h4 className={`text-lg font-medium ${
-                          isWinner ? 'text-yellow-100' : 'text-white'
+                          isActualWinner ? 'text-yellow-100' : 'text-white'
                         }`}>
                           {suggestion.title}
                         </h4>
-                        {isWinner && (
+                        {isActualWinner && (
                           <span className="bg-yellow-400 text-gray-900 px-2 py-1 rounded-full text-xs font-bold">
-                            {winners.length > 1 ? 'TIE WINNER' : 'WINNER'}
+                            WINNER
+                          </span>
+                        )}
+                        {isTiedForFirst && isTie && !isActualWinner && (
+                          <span className="bg-orange-400/20 text-orange-300 px-2 py-1 rounded-full text-xs font-medium border border-orange-400/50">
+                            TIED FOR 1ST
                           </span>
                         )}
                       </div>
@@ -159,7 +181,7 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
                     
                     <div className="ml-6 text-right">
                       <div className={`text-2xl font-bold ${
-                        isWinner ? 'text-yellow-400' : 'text-orange-400'
+                        isActualWinner ? 'text-yellow-400' : 'text-orange-400'
                       }`}>
                         {result.voteCount}
                       </div>
@@ -174,7 +196,7 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
                       <div className="w-20 h-2 bg-gray-700 rounded-full mt-2">
                         <div
                           className={`h-full rounded-full transition-all ${
-                            isWinner ? 'bg-yellow-400' : 'bg-orange-500'
+                            isActualWinner ? 'bg-yellow-400' : 'bg-orange-500'
                           }`}
                           style={{ width: `${percentage}%` }}
                         />
@@ -186,18 +208,21 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
             })}
           </div>
 
-          {winners.length > 1 && (
+          {isTie && actualWinner && (
             <div className="mt-6 p-4 bg-yellow-900/20 border border-yellow-400/50 rounded-lg">
-              <p className="text-yellow-300 font-medium text-center">
-                🎉 We have a tie! {winners.length} books tied for first place with {maxVotes} {maxVotes === 1 ? 'vote' : 'votes'} each.
+              <p className="text-yellow-300 font-medium text-center mb-2">
+                🎉 We have a tie! {tiedResults.length} books tied for first place with {maxVotes} {maxVotes === 1 ? 'vote' : 'votes'} each.
+              </p>
+              <p className="text-yellow-200 text-sm text-center">
+                Winner "{actualWinner.suggestion!.title}" was determined by randomized tiebreaker.
               </p>
             </div>
           )}
           
-          {winners.length === 1 && maxVotes > 0 && (
+          {!isTie && actualWinner && maxVotes > 0 && (
             <div className="mt-6 p-4 bg-yellow-900/20 border border-yellow-400/50 rounded-lg">
               <p className="text-yellow-300 font-medium text-center">
-                🎉 Congratulations! "{winners[0].suggestion!.title}" wins with {maxVotes} {maxVotes === 1 ? 'vote' : 'votes'}!
+                🎉 Congratulations! "{actualWinner.suggestion!.title}" wins with {maxVotes} {maxVotes === 1 ? 'vote' : 'votes'}!
               </p>
             </div>
           )}
