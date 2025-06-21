@@ -76,7 +76,10 @@ export interface UpdateVotingCycleRequest {
 }
 
 export interface SubmitVotesRequest {
-  bookSuggestionIds: string[];
+  // For normal mode (backward compatibility)
+  bookSuggestionIds?: string[];
+  // For ranking mode - books ordered from best (most points) to worst (least points)
+  orderedBookIds?: string[];
 }
 
 export interface User {

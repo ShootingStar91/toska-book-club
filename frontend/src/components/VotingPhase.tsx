@@ -12,6 +12,10 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
   const queryClient = useQueryClient();
   const votingDeadline = new Date(cycle.votingDeadline);
   const [selectedBookIds, setSelectedBookIds] = useState<string[]>([]);
+  const [rankedBookIds, setRankedBookIds] = useState<string[]>([]);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  
+  const isRankingMode = cycle.votingMode === 'ranking';
 
   // Fetch all book suggestions for this cycle
   const { data: suggestions = [], isLoading: suggestionsLoading } = useQuery({
@@ -34,14 +38,36 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
         const suggestion = suggestions.find((s) => s.id === bookId);
         return suggestion && suggestion.userId !== user.id;
       });
-      setSelectedBookIds(validVotedBookIds);
+      
+      if (isRankingMode) {
+        // For ranking mode, sort by points (descending) to get the original ranking
+        const sortedVotes = userVotes
+          .filter((vote: Vote) => {
+            const suggestion = suggestions.find((s) => s.id === vote.bookSuggestionId);
+            return suggestion && suggestion.userId !== user.id;
+          })
+          .sort((a: Vote, b: Vote) => b.points - a.points);
+        setRankedBookIds(sortedVotes.map((vote: Vote) => vote.bookSuggestionId));
+      } else {
+        setSelectedBookIds(validVotedBookIds);
+      }
     }
-  }, [userVotes, suggestions, user.id]);
+  }, [userVotes, suggestions, user.id, isRankingMode]);
+  
+  // Initialize ranking with all non-user books for ranking mode
+  useEffect(() => {
+    if (isRankingMode && suggestions.length > 0 && rankedBookIds.length === 0) {
+      const eligibleBooks = suggestions
+        .filter((s) => s.userId !== user.id)
+        .map((s) => s.id);
+      setRankedBookIds(eligibleBooks);
+    }
+  }, [isRankingMode, suggestions, user.id, rankedBookIds.length]);
 
   // Submit votes mutation
   const submitVotesMutation = useMutation({
-    mutationFn: (bookSuggestionIds: string[]) =>
-      votesApi.submit({ bookSuggestionIds }),
+    mutationFn: (voteData: { bookSuggestionIds?: string[]; orderedBookIds?: string[] }) =>
+      votesApi.submit(voteData),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.votes.userVotes(cycle.id),
@@ -63,7 +89,43 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
   };
 
   const handleSubmitVotes = () => {
-    submitVotesMutation.mutate(selectedBookIds);
+    if (isRankingMode) {
+      submitVotesMutation.mutate({ orderedBookIds: rankedBookIds });
+    } else {
+      submitVotesMutation.mutate({ bookSuggestionIds: selectedBookIds });
+    }
+  };
+  
+  // Drag and drop handlers for ranking mode
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+  
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+  
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null) return;
+    
+    const newRankedBookIds = [...rankedBookIds];
+    const draggedItem = newRankedBookIds[draggedIndex];
+    
+    // Remove the dragged item
+    newRankedBookIds.splice(draggedIndex, 1);
+    
+    // Insert it at the new position
+    newRankedBookIds.splice(dropIndex, 0, draggedItem);
+    
+    setRankedBookIds(newRankedBookIds);
+    setDraggedIndex(null);
+  };
+  
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
   };
 
   if (suggestionsLoading || votesLoading) {
@@ -85,11 +147,26 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
         <h2 className="text-2xl font-bold text-orange-500 mb-4">
           Voting Phase
         </h2>
-        <p className="text-gray-300 mb-4">
-          Vote for all the books that you'd like to read by clicking them.
-          Finally, click the Submit votes button. You can update your votes
-          afterwards too.
-        </p>
+        {isRankingMode ? (
+          <div className="text-gray-300 mb-4 space-y-2">
+            <p>
+              <strong>Ranking Voting:</strong> Drag and drop the books to rank them from best to worst.
+              The book at the top gets the most points, the book at the bottom gets the least.
+            </p>
+            <p className="text-sm text-gray-400">
+              Point distribution: {suggestions.filter(s => s.userId !== user.id).length > 0 && 
+                `Top book gets ${suggestions.filter(s => s.userId !== user.id).length - 1} points, 
+                 second gets ${Math.max(0, suggestions.filter(s => s.userId !== user.id).length - 2)} points, 
+                 and so on down to 0 points for the last book.`}
+            </p>
+          </div>
+        ) : (
+          <p className="text-gray-300 mb-4">
+            Vote for all the books that you'd like to read by clicking them.
+            Finally, click the Submit votes button. You can update your votes
+            afterwards too.
+          </p>
+        )}
         <div className="text-sm text-gray-400">
           <p>Voting deadline: {votingDeadline.toLocaleString('fi-FI')}</p>
         </div>
@@ -104,7 +181,88 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
           <p className="text-gray-400">
             No book suggestions available for voting.
           </p>
+        ) : isRankingMode ? (
+          /* Ranking Mode - Drag and Drop Interface */
+          <div className="space-y-3">
+            {/* Show user's own book separately if exists */}
+            {suggestions.filter(s => s.userId === user.id).map((suggestion: BookSuggestion) => (
+              <div
+                key={suggestion.id}
+                className="p-4 rounded-lg border border-yellow-500 bg-yellow-500/10 opacity-60"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h4 className="text-lg font-medium text-white mb-1">
+                      {suggestion.title}
+                    </h4>
+                    <p className="text-gray-300 mb-2">
+                      by {suggestion.author}
+                    </p>
+                    <p className="text-yellow-400 text-sm mb-2 font-medium">
+                      Your suggestion - Not included in ranking
+                    </p>
+                    <div className="flex flex-wrap gap-3 text-sm text-gray-400">
+                      {suggestion.year && <span>Year: {suggestion.year}</span>}
+                      {suggestion.pageCount && <span>Pages: {suggestion.pageCount}</span>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            
+            {/* Ranking List */}
+            <div className="bg-gray-700/30 rounded-lg p-4">
+              <h4 className="text-white font-medium mb-3">Drag to rank (best to worst):</h4>
+              <div className="space-y-2">
+                {rankedBookIds.map((bookId, index) => {
+                  const suggestion = suggestions.find(s => s.id === bookId);
+                  if (!suggestion || suggestion.userId === user.id) return null;
+                  
+                  const totalBooks = rankedBookIds.length;
+                  const points = totalBooks - 1 - index;
+                  
+                  return (
+                    <div
+                      key={bookId}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, index)}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, index)}
+                      onDragEnd={handleDragEnd}
+                      className={`p-3 rounded-lg border transition-all cursor-move ${
+                        draggedIndex === index
+                          ? 'border-orange-500 bg-orange-500/20 opacity-50'
+                          : 'border-gray-600 bg-gray-800 hover:border-orange-400'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="flex flex-col items-center text-sm">
+                            <span className="text-orange-400 font-bold">#{index + 1}</span>
+                            <span className="text-gray-400 text-xs">{points}pts</span>
+                          </div>
+                          <div className="text-gray-400">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <h5 className="text-white font-medium">{suggestion.title}</h5>
+                            <p className="text-gray-300 text-sm">by {suggestion.author}</p>
+                          </div>
+                        </div>
+                        <div className="text-gray-400 text-sm">
+                          {suggestion.year && <span>({suggestion.year})</span>}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         ) : (
+          /* Normal Mode - Click to Select */
           <div className="space-y-3">
             {suggestions.map((suggestion: BookSuggestion) => {
               const isSelected = selectedBookIds.includes(suggestion.id);
@@ -207,19 +365,26 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
         {suggestions.length > 0 && (
           <div className="mt-6 pt-4 border-t border-gray-700">
             <div className="flex items-center justify-between">
-              <p className="text-gray-300">
-                Selected: {selectedBookIds.length} book
-                {selectedBookIds.length !== 1 ? 's' : ''}
-              </p>
+              {isRankingMode ? (
+                <p className="text-gray-300">
+                  Ranked: {rankedBookIds.length} book
+                  {rankedBookIds.length !== 1 ? 's' : ''}
+                </p>
+              ) : (
+                <p className="text-gray-300">
+                  Selected: {selectedBookIds.length} book
+                  {selectedBookIds.length !== 1 ? 's' : ''}
+                </p>
+              )}
 
               <button
                 onClick={handleSubmitVotes}
-                disabled={submitVotesMutation.isPending}
+                disabled={submitVotesMutation.isPending || (isRankingMode && rankedBookIds.length === 0)}
                 className="bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-2 rounded-md font-medium transition-colors flex items-center gap-2"
               >
                 {submitVotesMutation.isPending
                   ? 'Submitting...'
-                  : 'Submit votes'}
+                  : isRankingMode ? 'Submit ranking' : 'Submit votes'}
                 {!submitVotesMutation.isPending && (
                   <svg
                     className="w-4 h-4"

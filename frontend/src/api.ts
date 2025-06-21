@@ -1,40 +1,19 @@
 import { QueryClient } from '@tanstack/react-query';
-// Type definitions
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  isAdmin: boolean;
-}
+import type {
+  User,
+  VotingCycle,
+  BookSuggestion,
+  LoginRequest,
+  LoginResponse,
+  CreateBookSuggestionRequest,
+  CreateVotingCycleRequest,
+  UpdateVotingCycleRequest,
+  SubmitVotesRequest,
+  Vote,
+  VoteResult,
+} from './shared-types';
 
-interface VotingCycle {
-  id: string;
-  suggestionDeadline: string;
-  votingDeadline: string;
-  status: 'suggesting' | 'voting' | 'completed';
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface BookSuggestion {
-  id: string;
-  userId: string;
-  votingCycleId: string;
-  title: string;
-  author: string;
-  year: number | null;
-  pageCount: number | null;
-  link: string | null;
-  miscInfo: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface LoginRequest {
-  username: string;
-  password: string;
-}
-
+// Additional types for frontend
 interface RegisterRequest {
   username: string;
   password: string;
@@ -42,52 +21,9 @@ interface RegisterRequest {
   secret: string;
 }
 
-interface LoginResponse {
-  token: string;
-  user: User;
-}
-
 interface RegisterResponse {
   success: boolean;
   message: string;
-}
-
-interface CreateBookSuggestionRequest {
-  title: string;
-  author: string;
-  year?: number;
-  pageCount?: number;
-  link?: string;
-  miscInfo?: string;
-}
-
-interface CreateVotingCycleRequest {
-  suggestionDeadline: string;
-  votingDeadline: string;
-}
-
-interface UpdateVotingCycleRequest {
-  suggestionDeadline?: string;
-  votingDeadline?: string;
-}
-
-interface SubmitVotesRequest {
-  bookSuggestionIds: string[];
-}
-
-interface Vote {
-  id: string;
-  userId: string;
-  votingCycleId: string;
-  bookSuggestionId: string;
-  createdAt: string;
-}
-
-interface VoteResult {
-  bookSuggestionId: string;
-  title: string;
-  author: string;
-  voteCount: number;
 }
 import { getValidToken } from './auth';
 

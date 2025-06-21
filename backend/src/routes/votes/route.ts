@@ -40,7 +40,9 @@ export async function votesRoute(fastify: FastifyInstance) {
           errorMessage.includes("invalid") ||
           errorMessage.includes("not part of") ||
           errorMessage.includes("requires") ||
-          errorMessage.includes("all books must be ranked")
+          errorMessage.includes("all books must be ranked") ||
+          errorMessage.includes("all books except your own must be ranked") ||
+          errorMessage.includes("Cannot include your own book suggestion")
         ) {
           return reply.status(400).send({ error: errorMessage });
         }

@@ -115,20 +115,30 @@ async function handleRankingModeVoting(
     throw new Error('Ranking mode requires orderedBookIds');
   }
 
-  // Get all book suggestions for this cycle
+  // Get all book suggestions for this cycle, separating user's own from others
   const allSuggestions = await db
     .selectFrom('book_suggestions')
-    .select('id')
+    .select(['id', 'user_id'])
     .where('voting_cycle_id', '=', cycleId)
     .execute();
 
-  // Validate that all books in the cycle are ranked
-  if (orderedBookIds.length !== allSuggestions.length) {
-    throw new Error('In ranking mode, all books must be ranked');
+  const userOwnBooks = allSuggestions.filter(s => s.user_id === userId);
+  const otherBooks = allSuggestions.filter(s => s.user_id !== userId);
+
+  // Validate that user hasn't included their own book in the ranking
+  const userOwnBookIds = userOwnBooks.map(book => book.id);
+  const hasOwnBook = orderedBookIds.some(bookId => userOwnBookIds.includes(bookId));
+  if (hasOwnBook) {
+    throw new Error('Cannot include your own book suggestion in ranking');
   }
 
-  // Validate that all provided IDs exist and belong to the current cycle
-  await validateBookSuggestionIds(orderedBookIds, cycleId);
+  // Validate that all books except user's own are ranked
+  if (orderedBookIds.length !== otherBooks.length) {
+    throw new Error(`In ranking mode, all books except your own must be ranked. Expected ${otherBooks.length} books, got ${orderedBookIds.length}`);
+  }
+
+  // Validate that all provided IDs exist and belong to the current cycle (and are not user's own)
+  await validateBookSuggestionIdsForRanking(orderedBookIds, cycleId, userId);
 
   // Use a transaction to ensure atomicity
   return await db.transaction().execute(async (trx) => {
@@ -183,6 +193,33 @@ async function validateBookSuggestionIds(bookSuggestionIds: string[], cycleId: s
 
   if (validSuggestions.length !== bookSuggestionIds.length) {
     throw new Error('One or more book suggestions are invalid or not part of the current voting cycle');
+  }
+}
+
+async function validateBookSuggestionIdsForRanking(bookSuggestionIds: string[], cycleId: string, userId: string): Promise<void> {
+  // First validate UUID format
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  for (const id of bookSuggestionIds) {
+    if (!uuidRegex.test(id)) {
+      throw new Error('One or more book suggestions are invalid or not part of the current voting cycle');
+    }
+  }
+
+  const validSuggestions = await db
+    .selectFrom('book_suggestions')
+    .select(['id', 'user_id'])
+    .where('id', 'in', bookSuggestionIds)
+    .where('voting_cycle_id', '=', cycleId)
+    .execute();
+
+  if (validSuggestions.length !== bookSuggestionIds.length) {
+    throw new Error('One or more book suggestions are invalid or not part of the current voting cycle');
+  }
+
+  // Double-check that none of the books belong to the user
+  const userOwnBooks = validSuggestions.filter(s => s.user_id === userId);
+  if (userOwnBooks.length > 0) {
+    throw new Error('Cannot include your own book suggestion in ranking');
   }
 }
 

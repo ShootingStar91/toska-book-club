@@ -375,12 +375,12 @@ describe('Votes Routes', () => {
           .post('/votes')
           .set('Authorization', `Bearer ${token}`)
           .send({
-            orderedBookIds: [suggestion2.id, suggestion1.id, suggestion3.id] // Book 2 = 2 points, Book 1 = 1 point, Book 3 = 0 points
+            orderedBookIds: [suggestion2.id, suggestion3.id] // Only rank other users' books (user's own suggestion1 excluded)
           });
 
         expect(response.status).toBe(200);
         expect(Array.isArray(response.body)).toBe(true);
-        expect(response.body).toHaveLength(3);
+        expect(response.body).toHaveLength(2);
         
         // Verify points were assigned correctly
         const votes = await testDb
@@ -390,15 +390,17 @@ describe('Votes Routes', () => {
           .where('voting_cycle_id', '=', cycle.id)
           .execute();
           
-        expect(votes).toHaveLength(3);
+        expect(votes).toHaveLength(2); // Only voted for other users' books
         
-        const book1Vote = votes.find(v => v.book_suggestion_id === suggestion1.id);
         const book2Vote = votes.find(v => v.book_suggestion_id === suggestion2.id);
         const book3Vote = votes.find(v => v.book_suggestion_id === suggestion3.id);
         
-        expect(book2Vote?.points).toBe(2); // First in ranking = highest points (N-1 = 3-1 = 2)
-        expect(book1Vote?.points).toBe(1); // Second in ranking
+        expect(book2Vote?.points).toBe(1); // First in ranking = highest points (N-1 = 2-1 = 1)
         expect(book3Vote?.points).toBe(0); // Last in ranking = 0 points
+        
+        // Verify user's own book has no votes from this user
+        const book1Vote = votes.find(v => v.book_suggestion_id === suggestion1.id);
+        expect(book1Vote).toBeUndefined();
 
         await app.close();
       });
@@ -410,10 +412,16 @@ describe('Votes Routes', () => {
           email: 'user2_partial@example.com',
           password_hash: await bcrypt.hash('password123', 10),
         });
+        const user3 = await createTestUser({
+          username: 'user3_partial',
+          email: 'user3_partial@example.com',
+          password_hash: await bcrypt.hash('password123', 10),
+        });
         
         const cycle = await createVotingCycle('voting', 'ranking');
-        const suggestion1 = await createBookSuggestion(user.id, cycle.id, 'Book 1');
-        await createBookSuggestion(user2.id, cycle.id, 'Book 2');
+        await createBookSuggestion(user.id, cycle.id, 'Book 1'); // User's own book
+        const suggestion2 = await createBookSuggestion(user2.id, cycle.id, 'Book 2');
+        await createBookSuggestion(user3.id, cycle.id, 'Book 3');
         
         const app = fastify();
         app.register(votesRoute, { prefix: '/votes' });
@@ -423,11 +431,40 @@ describe('Votes Routes', () => {
           .post('/votes')
           .set('Authorization', `Bearer ${token}`)
           .send({
-            orderedBookIds: [suggestion1.id] // Missing one book
+            orderedBookIds: [suggestion2.id] // Missing book 3, only ranking one of two other books
           });
 
         expect(response.status).toBe(400);
-        expect(response.body).toHaveProperty('error', 'In ranking mode, all books must be ranked');
+        expect(response.body).toHaveProperty('error', 'In ranking mode, all books except your own must be ranked. Expected 2 books, got 1');
+
+        await app.close();
+      });
+
+      it('should return 400 when user includes their own book in ranking', async () => {
+        const { user, token } = await createUserAndToken();
+        const user2 = await createTestUser({
+          username: 'user2_ownbook',
+          email: 'user2_ownbook@example.com',
+          password_hash: await bcrypt.hash('password123', 10),
+        });
+        
+        const cycle = await createVotingCycle('voting', 'ranking');
+        const suggestion1 = await createBookSuggestion(user.id, cycle.id, 'Book 1'); // User's own book
+        const suggestion2 = await createBookSuggestion(user2.id, cycle.id, 'Book 2');
+        
+        const app = fastify();
+        app.register(votesRoute, { prefix: '/votes' });
+        await app.ready();
+
+        const response = await request(app.server)
+          .post('/votes')
+          .set('Authorization', `Bearer ${token}`)
+          .send({
+            orderedBookIds: [suggestion1.id, suggestion2.id] // Includes user's own book
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty('error', 'Cannot include your own book suggestion in ranking');
 
         await app.close();
       });
