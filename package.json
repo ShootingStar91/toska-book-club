@@ -6,7 +6,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "docker compose -f docker-compose.dev.yml up -d",
     "migrate:up": "docker compose -f docker-compose.dev.yml exec backend npm run migrate:up",
-    "migrate:down": "docker compose -f docker-compose.dev.yml exec backend npm run migrate:down"
+    "migrate:down": "docker compose -f docker-compose.dev.yml exec backend npm run migrate:down",
+    "pgcli": "pgcli -h localhost -p 5432 -U postgres -d toska_book_club"
   },
   "keywords": [],
   "author": "",

@@ -1,0 +1,79 @@
+// Shared types for frontend and backend
+
+export interface VotingCycle {
+  id: string;
+  suggestionDeadline: string;
+  votingDeadline: string;
+  status: 'suggesting' | 'voting' | 'completed';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BookSuggestion {
+  id: string;
+  userId: string;
+  votingCycleId: string;
+  title: string;
+  author: string;
+  year: number | null;
+  pageCount: number | null;
+  link: string | null;
+  miscInfo: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateBookSuggestionRequest {
+  title: string;
+  author: string;
+  year?: number;
+  pageCount?: number;
+  link?: string;
+  miscInfo?: string;
+}
+
+export interface Vote {
+  id: string;
+  userId: string;
+  votingCycleId: string;
+  bookSuggestionId: string;
+  createdAt: string;
+}
+
+export interface VoteResult {
+  bookSuggestionId: string;
+  title: string;
+  author: string;
+  voteCount: number;
+}
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  user: {
+    id: string;
+    username: string;
+    email: string;
+    isAdmin: boolean;
+  };
+}
+
+export interface CreateVotingCycleRequest {
+  suggestionDeadline: string;
+  votingDeadline: string;
+}
+
+export interface SubmitVotesRequest {
+  bookSuggestionIds: string[];
+}
+
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  isAdmin: boolean;
+}
