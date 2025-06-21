@@ -34,7 +34,7 @@ export function LoginForm({ onLoginSuccess, onShowRegistration }: LoginFormProps
         <p className="text-gray-300 text-lg mb-6">Sign in to your account</p>
       </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit}>
           <div>
             <label
               htmlFor="username"
@@ -54,7 +54,7 @@ export function LoginForm({ onLoginSuccess, onShowRegistration }: LoginFormProps
             />
           </div>
 
-          <div>
+          <div style={{ marginTop: '24px' }}>
             <label
               htmlFor="password"
               className="block text-sm font-medium text-gray-300 mb-2"
@@ -74,28 +74,31 @@ export function LoginForm({ onLoginSuccess, onShowRegistration }: LoginFormProps
           </div>
 
           {loginMutation.error && (
-            <div className="bg-red-900 border border-red-700 text-red-300 px-4 py-3 rounded-md text-sm">
+            <div className="bg-red-900 border border-red-700 text-red-300 px-4 py-3 rounded-md text-sm" style={{ marginTop: '24px' }}>
               {loginMutation.error.message}
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={
-              loginMutation.isPending || !username.trim() || !password.trim()
-            }
-            className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-          >
-            {loginMutation.isPending ? 'Signing in...' : 'Sign in'}
-          </button>
+          <div style={{ marginTop: '32px' }}>
+            <button
+              type="submit"
+              disabled={
+                loginMutation.isPending || !username.trim() || !password.trim()
+              }
+              className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+            >
+              {loginMutation.isPending ? 'Signing in...' : 'Sign in'}
+            </button>
 
-          <button
-            type="button"
-            onClick={onShowRegistration}
-            className="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-          >
-            Create new account
-          </button>
+            <button
+              type="button"
+              onClick={onShowRegistration}
+              className="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+              style={{ marginTop: '16px' }}
+            >
+              Create new account
+            </button>
+          </div>
         </form>
     </div>
   );

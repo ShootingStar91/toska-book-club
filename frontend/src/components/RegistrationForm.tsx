@@ -47,7 +47,7 @@ export function RegistrationForm({ onBackToLogin }: RegistrationFormProps) {
         <p className="text-gray-300 text-lg mb-6">Create your account</p>
       </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit}>
           <div>
             <label
               htmlFor="username"
@@ -67,7 +67,7 @@ export function RegistrationForm({ onBackToLogin }: RegistrationFormProps) {
             />
           </div>
 
-          <div>
+          <div style={{ marginTop: '24px' }}>
             <label
               htmlFor="password"
               className="block text-sm font-medium text-gray-300 mb-2"
@@ -86,7 +86,7 @@ export function RegistrationForm({ onBackToLogin }: RegistrationFormProps) {
             />
           </div>
 
-          <div>
+          <div style={{ marginTop: '24px' }}>
             <label
               htmlFor="email"
               className="block text-sm font-medium text-gray-300 mb-2"
@@ -105,7 +105,7 @@ export function RegistrationForm({ onBackToLogin }: RegistrationFormProps) {
             />
           </div>
 
-          <div>
+          <div style={{ marginTop: '24px' }}>
             <label
               htmlFor="secret"
               className="block text-sm font-medium text-gray-300 mb-2"
@@ -125,39 +125,42 @@ export function RegistrationForm({ onBackToLogin }: RegistrationFormProps) {
           </div>
 
           {registerMutation.error && (
-            <div className="bg-red-900 border border-red-700 text-red-300 px-4 py-3 rounded-md text-sm">
+            <div className="bg-red-900 border border-red-700 text-red-300 px-4 py-3 rounded-md text-sm" style={{ marginTop: '24px' }}>
               {registerMutation.error.message}
             </div>
           )}
 
           {successMessage && (
-            <div className="bg-green-900 border border-green-700 text-green-300 px-4 py-3 rounded-md text-sm">
+            <div className="bg-green-900 border border-green-700 text-green-300 px-4 py-3 rounded-md text-sm" style={{ marginTop: '24px' }}>
               {successMessage} Redirecting to login...
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={
-              registerMutation.isPending ||
-              !username.trim() ||
-              !password.trim() ||
-              !email.trim() ||
-              !secret.trim()
-            }
-            className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-          >
-            {registerMutation.isPending ? 'Creating account...' : 'Create account'}
-          </button>
+          <div style={{ marginTop: '32px' }}>
+            <button
+              type="submit"
+              disabled={
+                registerMutation.isPending ||
+                !username.trim() ||
+                !password.trim() ||
+                !email.trim() ||
+                !secret.trim()
+              }
+              className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+            >
+              {registerMutation.isPending ? 'Creating account...' : 'Create account'}
+            </button>
 
-          <button
-            type="button"
-            onClick={onBackToLogin}
-            disabled={registerMutation.isPending}
-            className="w-full bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-          >
-            Back to login
-          </button>
+            <button
+              type="button"
+              onClick={onBackToLogin}
+              disabled={registerMutation.isPending}
+              className="w-full bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+              style={{ marginTop: '16px' }}
+            >
+              Back to login
+            </button>
+          </div>
         </form>
     </div>
   );
