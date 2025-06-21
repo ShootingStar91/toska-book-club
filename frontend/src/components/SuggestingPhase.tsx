@@ -140,13 +140,13 @@ export function SuggestingPhase({ cycle }: SuggestingPhaseProps) {
             )}
           </div>
         ) : canSuggest ? (
-          <div>
+          <div className="text-center">
             <p className="text-gray-400 mb-4">
               You haven't submitted a suggestion yet.
             </p>
             <button
               onClick={() => setShowForm(!showForm)}
-              className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md transition-colors flex items-center gap-2"
+              className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md transition-colors flex items-center gap-2 mx-auto"
             >
               {showForm ? 'Cancel' : 'Suggest a Book'}
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -270,7 +270,7 @@ export function SuggestingPhase({ cycle }: SuggestingPhaseProps) {
               </div>
             )}
 
-            <div className="flex space-x-3">
+            <div className="flex justify-center">
               <button
                 type="submit"
                 disabled={
@@ -278,7 +278,7 @@ export function SuggestingPhase({ cycle }: SuggestingPhaseProps) {
                   !formData.title.trim() ||
                   !formData.author.trim()
                 }
-                className="mx-auto bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md transition-colors flex items-center gap-2"
+                className="bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md transition-colors flex items-center gap-2"
               >
                 {createSuggestionMutation.isPending
                   ? 'Submitting...'

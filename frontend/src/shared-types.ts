@@ -5,6 +5,7 @@ export interface VotingCycle {
   suggestionDeadline: string;
   votingDeadline: string;
   status: 'suggesting' | 'voting' | 'completed';
+  votingMode: 'normal' | 'ranking';
   createdAt: string;
   updatedAt: string;
 }
@@ -65,11 +66,13 @@ export interface LoginResponse {
 export interface CreateVotingCycleRequest {
   suggestionDeadline: string;
   votingDeadline: string;
+  votingMode: 'normal' | 'ranking';
 }
 
 export interface UpdateVotingCycleRequest {
   suggestionDeadline?: string;
   votingDeadline?: string;
+  votingMode?: 'normal' | 'ranking';
 }
 
 export interface SubmitVotesRequest {

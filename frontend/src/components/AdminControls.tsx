@@ -19,6 +19,7 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
   const [formData, setFormData] = useState<CreateVotingCycleRequest | UpdateVotingCycleRequest>({
     suggestionDeadline: '',
     votingDeadline: '',
+    votingMode: 'normal',
   });
 
   // Initialize form data when editing
@@ -31,6 +32,7 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
       setFormData({
         suggestionDeadline: suggestionDate.toISOString().slice(0, 10),
         votingDeadline: votingDate.toISOString().slice(0, 10),
+        votingMode: currentCycle.votingMode,
       });
     }
   };
@@ -40,7 +42,7 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.votingCycles.all });
       setShowForm(false);
-      setFormData({ suggestionDeadline: '', votingDeadline: '' });
+      setFormData({ suggestionDeadline: '', votingDeadline: '', votingMode: 'normal' });
       onCycleCreated();
     },
   });
@@ -77,12 +79,14 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
         data: {
           suggestionDeadline: suggestionISOString,
           votingDeadline: votingISOString,
+          votingMode: formData.votingMode,
         },
       });
     } else {
       createCycleMutation.mutate({
         suggestionDeadline: suggestionISOString,
         votingDeadline: votingISOString,
+        votingMode: formData.votingMode || 'normal',
       });
     }
   };
@@ -91,7 +95,7 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
     if (isEditing) {
       initializeEditForm();
     } else {
-      setFormData({ suggestionDeadline: '', votingDeadline: '' });
+      setFormData({ suggestionDeadline: '', votingDeadline: '', votingMode: 'normal' });
     }
     setShowForm(true);
   };
@@ -109,15 +113,17 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
     <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 p-4">
       <div className="max-w-4xl mx-auto">
         {!showForm ? (
-          <button
-            onClick={handleShowForm}
-            className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-md font-medium transition-colors flex items-center justify-center gap-2"
-          >
+          <div className="flex justify-center">
+            <button
+              onClick={handleShowForm}
+              className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-md font-medium transition-colors flex items-center gap-2"
+            >
             {isEditing ? 'Edit Current Cycle' : 'Start New Voting Cycle'}
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
             </svg>
-          </button>
+            </button>
+          </div>
         ) : (
           <div className="bg-gray-700 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-white mb-4">
@@ -167,13 +173,61 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
                 </div>
               </div>
 
+              {/* Voting Mode Selection - only show when creating new cycle */}
+              {!isEditing && (
+                <div className="flex justify-center">
+                  <div className="space-y-2">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="votingMode"
+                        value="normal"
+                        checked={formData.votingMode === 'normal'}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            votingMode: e.target.value as 'normal' | 'ranking',
+                          })
+                        }
+                        className="w-4 h-4 text-orange-600 bg-gray-600 border-gray-500 focus:ring-orange-500 focus:ring-2"
+                        disabled={currentMutation.isPending}
+                      />
+                      <span className="ml-3 text-gray-300">
+                        <span className="font-medium text-base">Normal Voting</span>
+                        <span className="block text-gray-400 text-sm mt-1">Users can vote for any number of books they like</span>
+                      </span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="votingMode"
+                        value="ranking"
+                        checked={formData.votingMode === 'ranking'}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            votingMode: e.target.value as 'normal' | 'ranking',
+                          })
+                        }
+                        className="w-4 h-4 text-orange-600 bg-gray-600 border-gray-500 focus:ring-orange-500 focus:ring-2"
+                        disabled={currentMutation.isPending}
+                      />
+                      <span className="ml-3 text-gray-300">
+                        <span className="font-medium text-base">Ranking Voting</span>
+                        <span className="block text-gray-400 text-sm mt-1">Users rank all books from best to worst by dragging</span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
               {currentMutation.error && (
                 <div className="bg-red-900 border border-red-700 text-red-300 px-4 py-3 rounded-md text-sm">
                   {currentMutation.error.message}
                 </div>
               )}
 
-              <div className="flex space-x-3">
+              <div className="flex justify-center space-x-3">
                 <button
                   type="submit"
                   disabled={
