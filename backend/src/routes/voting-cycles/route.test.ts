@@ -46,13 +46,15 @@ describe('Voting Cycles Routes', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           suggestionDeadline: tomorrow.toISOString(),
-          votingDeadline: dayAfterTomorrow.toISOString()
+          votingDeadline: dayAfterTomorrow.toISOString(),
+          votingMode: 'normal'
         });
 
       expect(response.status).toBe(201);
       expect(response.body).toMatchObject({
         id: expect.any(String),
         status: 'suggesting',
+        votingMode: 'normal',
         suggestionDeadline: expect.any(String),
         votingDeadline: expect.any(String),
         createdAt: expect.any(String),
@@ -77,7 +79,8 @@ describe('Voting Cycles Routes', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           suggestionDeadline: tomorrow.toISOString(),
-          votingDeadline: dayAfterTomorrow.toISOString()
+          votingDeadline: dayAfterTomorrow.toISOString(),
+          votingMode: 'normal'
         });
 
       expect(response.status).toBe(403);
@@ -140,7 +143,8 @@ describe('Voting Cycles Routes', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           suggestionDeadline: yesterday.toISOString(),
-          votingDeadline: tomorrow.toISOString()
+          votingDeadline: tomorrow.toISOString(),
+          votingMode: 'normal'
         });
 
       expect(response.status).toBe(400);
@@ -165,7 +169,8 @@ describe('Voting Cycles Routes', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           suggestionDeadline: tomorrow.toISOString(),
-          votingDeadline: dayAfterTomorrow.toISOString()
+          votingDeadline: dayAfterTomorrow.toISOString(),
+          votingMode: 'normal'
         });
 
       // Try to create second cycle
@@ -174,7 +179,8 @@ describe('Voting Cycles Routes', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           suggestionDeadline: tomorrow.toISOString(),
-          votingDeadline: dayAfterTomorrow.toISOString()
+          votingDeadline: dayAfterTomorrow.toISOString(),
+          votingMode: 'normal'
         });
 
       expect(response.status).toBe(409);
@@ -198,7 +204,8 @@ describe('Voting Cycles Routes', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           suggestionDeadline: tomorrow.toISOString(),
-          votingDeadline: today.toISOString()
+          votingDeadline: today.toISOString(),
+          votingMode: 'normal'
         });
 
       expect(response.status).toBe(400);
@@ -291,7 +298,8 @@ describe('Voting Cycles Routes', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           suggestionDeadline: tomorrow.toISOString(),
-          votingDeadline: dayAfterTomorrow.toISOString()
+          votingDeadline: dayAfterTomorrow.toISOString(),
+          votingMode: 'normal'
         });
 
       const cycleId = createResponse.body.id;
@@ -335,7 +343,8 @@ describe('Voting Cycles Routes', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           suggestionDeadline: tomorrow.toISOString(),
-          votingDeadline: dayAfterTomorrow.toISOString()
+          votingDeadline: dayAfterTomorrow.toISOString(),
+          votingMode: 'normal'
         });
 
       const cycleId = createResponse.body.id;
@@ -375,7 +384,8 @@ describe('Voting Cycles Routes', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           suggestionDeadline: tomorrow.toISOString(),
-          votingDeadline: dayAfterTomorrow.toISOString()
+          votingDeadline: dayAfterTomorrow.toISOString(),
+          votingMode: 'normal'
         });
 
       const cycleId = createResponse.body.id;
@@ -447,7 +457,8 @@ describe('Voting Cycles Routes', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           suggestionDeadline: tomorrow.toISOString(),
-          votingDeadline: dayAfterTomorrow.toISOString()
+          votingDeadline: dayAfterTomorrow.toISOString(),
+          votingMode: 'normal'
         });
 
       const cycleId = createResponse.body.id;
@@ -484,7 +495,8 @@ describe('Voting Cycles Routes', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           suggestionDeadline: tomorrow.toISOString(),
-          votingDeadline: dayAfterTomorrow.toISOString()
+          votingDeadline: dayAfterTomorrow.toISOString(),
+          votingMode: 'normal'
         });
 
       const cycleId = createResponse.body.id;
@@ -521,7 +533,8 @@ describe('Voting Cycles Routes', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           suggestionDeadline: tomorrow.toISOString(),
-          votingDeadline: dayAfterTomorrow.toISOString()
+          votingDeadline: dayAfterTomorrow.toISOString(),
+          votingMode: 'normal'
         });
 
       const cycleId = createResponse.body.id;

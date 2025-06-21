@@ -2,7 +2,10 @@ import { db } from '../../database';
 import { NewVote } from '../../database';
 
 export interface SubmitVotesRequest {
-  bookSuggestionIds: string[];
+  // For normal mode (backward compatibility)
+  bookSuggestionIds?: string[];
+  // For ranking mode - books ordered from best (most points) to worst (least points)
+  orderedBookIds?: string[];
 }
 
 export interface VoteResponse {
@@ -10,6 +13,7 @@ export interface VoteResponse {
   userId: string;
   votingCycleId: string;
   bookSuggestionId: string;
+  points: number;
   createdAt: string;
 }
 
@@ -17,12 +21,12 @@ export async function submitVotes(
   userId: string,
   data: SubmitVotesRequest
 ): Promise<VoteResponse[]> {
-  const { bookSuggestionIds } = data;
+  const { bookSuggestionIds, orderedBookIds } = data;
 
   // Get current active voting cycle
   const currentCycle = await db
     .selectFrom('voting_cycles')
-    .select(['id', 'status', 'voting_deadline'])
+    .select(['id', 'status', 'voting_deadline', 'voting_mode'])
     .where('status', 'in', ['suggesting', 'voting'])
     .orderBy('created_at', 'desc')
     .executeTakeFirst();
@@ -42,26 +46,26 @@ export async function submitVotes(
     throw new Error('Voting deadline has passed');
   }
 
+  // Handle different voting modes
+  if (currentCycle.voting_mode === 'ranking') {
+    return await handleRankingModeVoting(userId, currentCycle.id, orderedBookIds);
+  } else {
+    return await handleNormalModeVoting(userId, currentCycle.id, bookSuggestionIds);
+  }
+}
+
+async function handleNormalModeVoting(
+  userId: string,
+  cycleId: string,
+  bookSuggestionIds?: string[]
+): Promise<VoteResponse[]> {
+  if (!bookSuggestionIds) {
+    throw new Error('Normal mode requires bookSuggestionIds');
+  }
+
   // Validate that all book suggestion IDs exist and belong to the current cycle
   if (bookSuggestionIds.length > 0) {
-    // First validate UUID format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    for (const id of bookSuggestionIds) {
-      if (!uuidRegex.test(id)) {
-        throw new Error('One or more book suggestions are invalid or not part of the current voting cycle');
-      }
-    }
-
-    const validSuggestions = await db
-      .selectFrom('book_suggestions')
-      .select('id')
-      .where('id', 'in', bookSuggestionIds)
-      .where('voting_cycle_id', '=', currentCycle.id)
-      .execute();
-
-    if (validSuggestions.length !== bookSuggestionIds.length) {
-      throw new Error('One or more book suggestions are invalid or not part of the current voting cycle');
-    }
+    await validateBookSuggestionIds(bookSuggestionIds, cycleId);
   }
 
   // Use a transaction to ensure atomicity
@@ -70,7 +74,7 @@ export async function submitVotes(
     await trx
       .deleteFrom('votes')
       .where('user_id', '=', userId)
-      .where('voting_cycle_id', '=', currentCycle.id)
+      .where('voting_cycle_id', '=', cycleId)
       .execute();
 
     // Create new votes if any book suggestions were provided
@@ -80,8 +84,9 @@ export async function submitVotes(
 
     const newVotes: NewVote[] = bookSuggestionIds.map(bookSuggestionId => ({
       user_id: userId,
-      voting_cycle_id: currentCycle.id,
+      voting_cycle_id: cycleId,
       book_suggestion_id: bookSuggestionId,
+      points: 1, // Normal mode: each vote = 1 point
     }));
 
     const createdVotes = await trx
@@ -95,9 +100,90 @@ export async function submitVotes(
       userId: vote.user_id,
       votingCycleId: vote.voting_cycle_id,
       bookSuggestionId: vote.book_suggestion_id,
+      points: vote.points,
       createdAt: vote.created_at.toISOString(),
     }));
   });
+}
+
+async function handleRankingModeVoting(
+  userId: string,
+  cycleId: string,
+  orderedBookIds?: string[]
+): Promise<VoteResponse[]> {
+  if (!orderedBookIds) {
+    throw new Error('Ranking mode requires orderedBookIds');
+  }
+
+  // Get all book suggestions for this cycle
+  const allSuggestions = await db
+    .selectFrom('book_suggestions')
+    .select('id')
+    .where('voting_cycle_id', '=', cycleId)
+    .execute();
+
+  // Validate that all books in the cycle are ranked
+  if (orderedBookIds.length !== allSuggestions.length) {
+    throw new Error('In ranking mode, all books must be ranked');
+  }
+
+  // Validate that all provided IDs exist and belong to the current cycle
+  await validateBookSuggestionIds(orderedBookIds, cycleId);
+
+  // Use a transaction to ensure atomicity
+  return await db.transaction().execute(async (trx) => {
+    // Remove all existing votes for this user and cycle
+    await trx
+      .deleteFrom('votes')
+      .where('user_id', '=', userId)
+      .where('voting_cycle_id', '=', cycleId)
+      .execute();
+
+    // Create ranking votes: first book gets N-1 points, last gets 0 points
+    const totalBooks = orderedBookIds.length;
+    const newVotes: NewVote[] = orderedBookIds.map((bookSuggestionId, index) => ({
+      user_id: userId,
+      voting_cycle_id: cycleId,
+      book_suggestion_id: bookSuggestionId,
+      points: totalBooks - 1 - index, // First book = N-1 points, last = 0 points
+    }));
+
+    const createdVotes = await trx
+      .insertInto('votes')
+      .values(newVotes)
+      .returningAll()
+      .execute();
+
+    return createdVotes.map(vote => ({
+      id: vote.id,
+      userId: vote.user_id,
+      votingCycleId: vote.voting_cycle_id,
+      bookSuggestionId: vote.book_suggestion_id,
+      points: vote.points,
+      createdAt: vote.created_at.toISOString(),
+    }));
+  });
+}
+
+async function validateBookSuggestionIds(bookSuggestionIds: string[], cycleId: string): Promise<void> {
+  // First validate UUID format
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  for (const id of bookSuggestionIds) {
+    if (!uuidRegex.test(id)) {
+      throw new Error('One or more book suggestions are invalid or not part of the current voting cycle');
+    }
+  }
+
+  const validSuggestions = await db
+    .selectFrom('book_suggestions')
+    .select('id')
+    .where('id', 'in', bookSuggestionIds)
+    .where('voting_cycle_id', '=', cycleId)
+    .execute();
+
+  if (validSuggestions.length !== bookSuggestionIds.length) {
+    throw new Error('One or more book suggestions are invalid or not part of the current voting cycle');
+  }
 }
 
 export async function getUserVotesForCycle(userId: string, cycleId: string): Promise<VoteResponse[]> {
@@ -114,6 +200,7 @@ export async function getUserVotesForCycle(userId: string, cycleId: string): Pro
     userId: vote.user_id,
     votingCycleId: vote.voting_cycle_id,
     bookSuggestionId: vote.book_suggestion_id,
+    points: vote.points,
     createdAt: vote.created_at.toISOString(),
   }));
 }
@@ -154,7 +241,7 @@ export async function getVoteResults(cycleId: string): Promise<VoteResultRespons
       'book_suggestions.id as bookSuggestionId',
       'book_suggestions.title',
       'book_suggestions.author',
-      db.fn.count('votes.id').as('voteCount')
+      db.fn.sum('votes.points').as('voteCount') // Sum points instead of counting votes
     ])
     .where('votes.voting_cycle_id', '=', cycleId)
     .groupBy(['book_suggestions.id', 'book_suggestions.title', 'book_suggestions.author'])

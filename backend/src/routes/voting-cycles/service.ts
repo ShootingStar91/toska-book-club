@@ -4,11 +4,13 @@ import { NewVotingCycle } from '../../database';
 export interface CreateVotingCycleRequest {
   suggestionDeadline: string; // ISO date string
   votingDeadline: string; // ISO date string
+  votingMode: 'normal' | 'ranking';
 }
 
 export interface UpdateVotingCycleRequest {
   suggestionDeadline?: string; // ISO date string
   votingDeadline?: string; // ISO date string
+  votingMode?: 'normal' | 'ranking';
 }
 
 export interface VotingCycleResponse {
@@ -16,16 +18,17 @@ export interface VotingCycleResponse {
   suggestionDeadline: string;
   votingDeadline: string;
   status: 'suggesting' | 'voting' | 'completed';
+  votingMode: 'normal' | 'ranking';
   createdAt: string;
   updatedAt: string;
 }
 
 export async function createVotingCycle(data: CreateVotingCycleRequest): Promise<VotingCycleResponse> {
-  const { suggestionDeadline, votingDeadline } = data;
+  const { suggestionDeadline, votingDeadline, votingMode } = data;
 
   // Validate required fields
-  if (!suggestionDeadline || !votingDeadline) {
-    throw new Error('Suggestion deadline and voting deadline are required');
+  if (!suggestionDeadline || !votingDeadline || !votingMode) {
+    throw new Error('Suggestion deadline, voting deadline, and voting mode are required');
   }
 
   // Check if there's already an active voting cycle
@@ -60,6 +63,7 @@ export async function createVotingCycle(data: CreateVotingCycleRequest): Promise
     suggestion_deadline: suggestionDate,
     voting_deadline: votingDate,
     status: 'suggesting',
+    voting_mode: votingMode,
   };
 
   const createdCycle = await db
@@ -73,6 +77,7 @@ export async function createVotingCycle(data: CreateVotingCycleRequest): Promise
     suggestionDeadline: createdCycle.suggestion_deadline.toISOString(),
     votingDeadline: createdCycle.voting_deadline.toISOString(),
     status: createdCycle.status,
+    votingMode: createdCycle.voting_mode,
     createdAt: createdCycle.created_at.toISOString(),
     updatedAt: createdCycle.updated_at.toISOString(),
   };
@@ -90,6 +95,7 @@ export async function getAllVotingCycles(): Promise<VotingCycleResponse[]> {
     suggestionDeadline: cycle.suggestion_deadline.toISOString(),
     votingDeadline: cycle.voting_deadline.toISOString(),
     status: cycle.status,
+    votingMode: cycle.voting_mode,
     createdAt: cycle.created_at.toISOString(),
     updatedAt: cycle.updated_at.toISOString(),
   }));
@@ -143,13 +149,14 @@ export async function getCurrentVotingCycle(): Promise<VotingCycleResponse | nul
     suggestionDeadline: cycle.suggestion_deadline.toISOString(),
     votingDeadline: cycle.voting_deadline.toISOString(),
     status: currentStatus,
+    votingMode: cycle.voting_mode,
     createdAt: cycle.created_at.toISOString(),
     updatedAt: cycle.updated_at.toISOString(),
   };
 }
 
 export async function updateVotingCycle(cycleId: string, data: UpdateVotingCycleRequest): Promise<VotingCycleResponse> {
-  const { suggestionDeadline, votingDeadline } = data;
+  const { suggestionDeadline, votingDeadline, votingMode } = data;
 
   // Get the current cycle to validate it exists and is editable
   const existingCycle = await db
@@ -195,6 +202,11 @@ export async function updateVotingCycle(cycleId: string, data: UpdateVotingCycle
     updateData.voting_deadline = votingDate;
   }
 
+  // Update voting mode if provided
+  if (votingMode) {
+    updateData.voting_mode = votingMode;
+  }
+
   // Update the voting cycle
   const updatedCycle = await db
     .updateTable('voting_cycles')
@@ -208,6 +220,7 @@ export async function updateVotingCycle(cycleId: string, data: UpdateVotingCycle
     suggestionDeadline: updatedCycle.suggestion_deadline.toISOString(),
     votingDeadline: updatedCycle.voting_deadline.toISOString(),
     status: updatedCycle.status,
+    votingMode: updatedCycle.voting_mode,
     createdAt: updatedCycle.created_at.toISOString(),
     updatedAt: updatedCycle.updated_at.toISOString(),
   };

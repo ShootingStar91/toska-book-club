@@ -41,6 +41,7 @@ describe('Book Suggestions Routes', () => {
         suggestion_deadline: tomorrow,
         voting_deadline: dayAfterTomorrow,
         status,
+        voting_mode: 'normal',
       })
       .returningAll()
       .executeTakeFirstOrThrow();

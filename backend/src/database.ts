@@ -23,6 +23,7 @@ export interface VotingCyclesTable {
   suggestion_deadline: Date;
   voting_deadline: Date;
   status: Generated<'suggesting' | 'voting' | 'completed'>;
+  voting_mode: Generated<'normal' | 'ranking'>;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
 }
@@ -46,6 +47,7 @@ export interface VotesTable {
   user_id: string;
   voting_cycle_id: string;
   book_suggestion_id: string;
+  points: Generated<number>;
   created_at: Generated<Date>;
 }
 

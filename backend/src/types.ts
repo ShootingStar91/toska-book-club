@@ -5,6 +5,7 @@ export interface VotingCycle {
   suggestionDeadline: string;
   votingDeadline: string;
   status: 'suggesting' | 'voting' | 'completed';
+  votingMode: 'normal' | 'ranking';
   createdAt: string;
   updatedAt: string;
 }
@@ -37,6 +38,7 @@ export interface Vote {
   userId: string;
   votingCycleId: string;
   bookSuggestionId: string;
+  points: number;
   createdAt: string;
 }
 
@@ -44,7 +46,7 @@ export interface VoteResult {
   bookSuggestionId: string;
   title: string;
   author: string;
-  voteCount: number;
+  voteCount: number; // For normal mode: number of votes, for ranking mode: total points
 }
 
 export interface LoginRequest {
@@ -65,10 +67,20 @@ export interface LoginResponse {
 export interface CreateVotingCycleRequest {
   suggestionDeadline: string;
   votingDeadline: string;
+  votingMode: 'normal' | 'ranking';
+}
+
+export interface UpdateVotingCycleRequest {
+  suggestionDeadline?: string;
+  votingDeadline?: string;
+  votingMode?: 'normal' | 'ranking';
 }
 
 export interface SubmitVotesRequest {
-  bookSuggestionIds: string[];
+  // For normal mode (backward compatibility)
+  bookSuggestionIds?: string[];
+  // For ranking mode - books ordered from best (most points) to worst (least points)
+  orderedBookIds?: string[];
 }
 
 export interface User {

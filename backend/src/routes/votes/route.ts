@@ -38,7 +38,9 @@ export async function votesRoute(fastify: FastifyInstance) {
         }
         if (
           errorMessage.includes("invalid") ||
-          errorMessage.includes("not part of")
+          errorMessage.includes("not part of") ||
+          errorMessage.includes("requires") ||
+          errorMessage.includes("all books must be ranked")
         ) {
           return reply.status(400).send({ error: errorMessage });
         }

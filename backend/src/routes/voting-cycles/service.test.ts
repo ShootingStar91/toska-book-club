@@ -10,12 +10,14 @@ describe('Voting Cycles Service', () => {
 
       const result = await createVotingCycle({
         suggestionDeadline: tomorrow.toISOString(),
-        votingDeadline: dayAfterTomorrow.toISOString()
+        votingDeadline: dayAfterTomorrow.toISOString(),
+        votingMode: 'normal'
       });
 
       expect(result).toMatchObject({
         id: expect.any(String),
         status: 'suggesting',
+        votingMode: 'normal',
         suggestionDeadline: expect.any(String),
         votingDeadline: expect.any(String),
         createdAt: expect.any(String),
@@ -39,7 +41,8 @@ describe('Voting Cycles Service', () => {
 
       await expect(createVotingCycle({
         suggestionDeadline: yesterday.toISOString(),
-        votingDeadline: tomorrow.toISOString()
+        votingDeadline: tomorrow.toISOString(),
+        votingMode: 'normal'
       })).rejects.toThrow('Suggestion deadline must be in the future');
     });
 
@@ -49,7 +52,8 @@ describe('Voting Cycles Service', () => {
 
       await expect(createVotingCycle({
         suggestionDeadline: tomorrow.toISOString(),
-        votingDeadline: today.toISOString()
+        votingDeadline: today.toISOString(),
+        votingMode: 'normal'
       })).rejects.toThrow('Voting deadline must be after suggestion deadline');
     });
 
@@ -60,13 +64,15 @@ describe('Voting Cycles Service', () => {
       // Create first cycle
       await createVotingCycle({
         suggestionDeadline: tomorrow.toISOString(),
-        votingDeadline: dayAfterTomorrow.toISOString()
+        votingDeadline: dayAfterTomorrow.toISOString(),
+        votingMode: 'normal'
       });
 
       // Try to create second cycle while first is active
       await expect(createVotingCycle({
         suggestionDeadline: tomorrow.toISOString(),
-        votingDeadline: dayAfterTomorrow.toISOString()
+        votingDeadline: dayAfterTomorrow.toISOString(),
+        votingMode: 'normal'
       })).rejects.toThrow('Cannot create a new voting cycle while one is still active');
     });
 
@@ -85,7 +91,8 @@ describe('Voting Cycles Service', () => {
 
       const firstCycle = await createVotingCycle({
         suggestionDeadline: tomorrow.toISOString(),
-        votingDeadline: dayAfterTomorrow.toISOString()
+        votingDeadline: dayAfterTomorrow.toISOString(),
+        votingMode: 'normal'
       });
 
       // Mark first cycle as completed so we can create another
@@ -98,7 +105,8 @@ describe('Voting Cycles Service', () => {
       // Now create second cycle
       await createVotingCycle({
         suggestionDeadline: tomorrow.toISOString(),
-        votingDeadline: dayAfterTomorrow.toISOString()
+        votingDeadline: dayAfterTomorrow.toISOString(),
+        votingMode: 'normal'
       });
 
       const result = await getAllVotingCycles();
@@ -120,7 +128,8 @@ describe('Voting Cycles Service', () => {
 
       const cycle = await createVotingCycle({
         suggestionDeadline: tomorrow.toISOString(),
-        votingDeadline: dayAfterTomorrow.toISOString()
+        votingDeadline: dayAfterTomorrow.toISOString(),
+        votingMode: 'normal'
       });
 
       const result = await getCurrentVotingCycle();
@@ -139,7 +148,8 @@ describe('Voting Cycles Service', () => {
       // Create a cycle
       const cycle = await createVotingCycle({
         suggestionDeadline: tomorrow.toISOString(),
-        votingDeadline: dayAfterTomorrow.toISOString()
+        votingDeadline: dayAfterTomorrow.toISOString(),
+        votingMode: 'normal'
       });
 
       // Update both deadlines
@@ -168,7 +178,8 @@ describe('Voting Cycles Service', () => {
 
       const cycle = await createVotingCycle({
         suggestionDeadline: tomorrow.toISOString(),
-        votingDeadline: dayAfterTomorrow.toISOString()
+        votingDeadline: dayAfterTomorrow.toISOString(),
+        votingMode: 'normal'
       });
 
       const newSuggestionDeadline = new Date(Date.now() + 36 * 60 * 60 * 1000);
@@ -187,7 +198,8 @@ describe('Voting Cycles Service', () => {
 
       const cycle = await createVotingCycle({
         suggestionDeadline: tomorrow.toISOString(),
-        votingDeadline: dayAfterTomorrow.toISOString()
+        votingDeadline: dayAfterTomorrow.toISOString(),
+        votingMode: 'normal'
       });
 
       const newVotingDeadline = new Date(Date.now() + 72 * 60 * 60 * 1000);
@@ -214,7 +226,8 @@ describe('Voting Cycles Service', () => {
 
       const cycle = await createVotingCycle({
         suggestionDeadline: tomorrow.toISOString(),
-        votingDeadline: dayAfterTomorrow.toISOString()
+        votingDeadline: dayAfterTomorrow.toISOString(),
+        votingMode: 'normal'
       });
 
       // Mark cycle as completed
@@ -237,7 +250,8 @@ describe('Voting Cycles Service', () => {
 
       const cycle = await createVotingCycle({
         suggestionDeadline: tomorrow.toISOString(),
-        votingDeadline: dayAfterTomorrow.toISOString()
+        votingDeadline: dayAfterTomorrow.toISOString(),
+        votingMode: 'normal'
       });
 
       const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -255,7 +269,8 @@ describe('Voting Cycles Service', () => {
 
       const cycle = await createVotingCycle({
         suggestionDeadline: tomorrow.toISOString(),
-        votingDeadline: dayAfterTomorrow.toISOString()
+        votingDeadline: dayAfterTomorrow.toISOString(),
+        votingMode: 'normal'
       });
 
       const today = new Date(Date.now() + 12 * 60 * 60 * 1000);
@@ -271,7 +286,8 @@ describe('Voting Cycles Service', () => {
 
       const cycle = await createVotingCycle({
         suggestionDeadline: tomorrow.toISOString(),
-        votingDeadline: dayAfterTomorrow.toISOString()
+        votingDeadline: dayAfterTomorrow.toISOString(),
+        votingMode: 'normal'
       });
 
       const threeDaysFromNow = new Date(Date.now() + 72 * 60 * 60 * 1000);
@@ -289,7 +305,8 @@ describe('Voting Cycles Service', () => {
 
       const cycle = await createVotingCycle({
         suggestionDeadline: tomorrow.toISOString(),
-        votingDeadline: dayAfterTomorrow.toISOString()
+        votingDeadline: dayAfterTomorrow.toISOString(),
+        votingMode: 'normal'
       });
 
       await expect(updateVotingCycle(cycle.id, {
@@ -303,7 +320,8 @@ describe('Voting Cycles Service', () => {
 
       const cycle = await createVotingCycle({
         suggestionDeadline: tomorrow.toISOString(),
-        votingDeadline: dayAfterTomorrow.toISOString()
+        votingDeadline: dayAfterTomorrow.toISOString(),
+        votingMode: 'normal'
       });
 
       await expect(updateVotingCycle(cycle.id, {
