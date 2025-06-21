@@ -1,48 +1,18 @@
--- Clean the database
+-- Initialize database for suggesting phase (original scenario)
+-- Run init-users.sql first to set up users
+
+-- Clean existing voting data
 DELETE FROM votes;
 DELETE FROM book_suggestions;
 DELETE FROM voting_cycles;
-DELETE FROM users;
 
--- Reset sequences (if any)
--- Note: PostgreSQL uses SERIAL/UUID, so no sequences to reset for UUIDs
-
--- Insert test users
-INSERT INTO users (id, username, email, password_hash, is_admin, created_at, updated_at) VALUES
-  (
-    gen_random_uuid(),
-    'admin',
-    'admin@example.com',
-    '$2b$10$Qkv/8ACu60Ir5CaN/u1KqeELFt.x61EBBGHiutXZ4BQUeM4IXDwWK', -- password: admin123
-    true,
-    NOW(),
-    NOW()
-  ),
-  (
-    gen_random_uuid(),
-    'alice',
-    'alice@example.com', 
-    '$2b$10$gfAwNqDKylgjaHYvOaQuX.c8QX5tGK6OMzVm6HtXOwIELPozinZyS', -- password: alice123
-    false,
-    NOW(),
-    NOW()
-  ),
-  (
-    gen_random_uuid(),
-    'bob',
-    'bob@example.com',
-    '$2b$10$b/VG677kKn7cP0M9P5xW0.B7sh7xanie9zHdrfBlKuG8rQIqqvLBK', -- password: bob123
-    false,
-    NOW(),
-    NOW()
-  );
-
--- Create a voting cycle with suggestion deadline 1 month from now
-INSERT INTO voting_cycles (id, suggestion_deadline, voting_deadline, status, created_at, updated_at) VALUES
+-- Create a voting cycle in suggesting phase with normal mode
+INSERT INTO voting_cycles (id, suggestion_deadline, voting_deadline, voting_mode, status, created_at, updated_at) VALUES
   (
     gen_random_uuid(),
     NOW() + INTERVAL '1 month',
     NOW() + INTERVAL '1 month 1 week',
+    'normal',
     'suggesting',
     NOW(),
     NOW()
@@ -72,11 +42,8 @@ SELECT
 FROM alice_user, current_cycle;
 
 -- Verify the data was inserted
-SELECT 'Users created:' as info;
-SELECT username, email, is_admin FROM users ORDER BY username;
-
-SELECT 'Voting cycle created:' as info;
-SELECT id, suggestion_deadline, voting_deadline, status FROM voting_cycles;
+SELECT 'Voting cycle created (suggesting phase, normal mode):' as info;
+SELECT id, suggestion_deadline, voting_deadline, voting_mode, status FROM voting_cycles;
 
 SELECT 'Book suggestion created:' as info;
 SELECT bs.title, bs.author, u.username as suggested_by 
