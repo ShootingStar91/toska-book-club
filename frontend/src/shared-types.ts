@@ -33,6 +33,15 @@ export interface CreateBookSuggestionRequest {
   miscInfo?: string;
 }
 
+export interface UpdateBookSuggestionRequest {
+  title?: string;
+  author?: string;
+  year?: number;
+  pageCount?: number;
+  link?: string;
+  miscInfo?: string;
+}
+
 export interface Vote {
   id: string;
   userId: string;

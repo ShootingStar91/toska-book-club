@@ -6,6 +6,7 @@ import type {
   LoginRequest,
   LoginResponse,
   CreateBookSuggestionRequest,
+  UpdateBookSuggestionRequest,
   CreateVotingCycleRequest,
   UpdateVotingCycleRequest,
   SubmitVotesRequest,
@@ -113,6 +114,13 @@ export const bookSuggestionsApi = {
   create: async (data: CreateBookSuggestionRequest): Promise<BookSuggestion> => {
     return apiRequest<BookSuggestion>('/book-suggestions', {
       method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  
+  update: async (suggestionId: string, data: UpdateBookSuggestionRequest): Promise<BookSuggestion> => {
+    return apiRequest<BookSuggestion>(`/book-suggestions/${suggestionId}`, {
+      method: 'PUT',
       body: JSON.stringify(data),
     });
   },

@@ -10,6 +10,15 @@ export interface CreateBookSuggestionRequest {
   miscInfo?: string;
 }
 
+export interface UpdateBookSuggestionRequest {
+  title?: string;
+  author?: string;
+  year?: number;
+  pageCount?: number;
+  link?: string;
+  miscInfo?: string;
+}
+
 export interface BookSuggestionResponse {
   id: string;
   userId: string;
@@ -150,5 +159,100 @@ export async function getUserSuggestionForCycle(userId: string, cycleId: string)
     miscInfo: suggestion.misc_info,
     createdAt: suggestion.created_at.toISOString(),
     updatedAt: suggestion.updated_at.toISOString(),
+  };
+}
+
+export async function updateBookSuggestion(
+  userId: string,
+  suggestionId: string,
+  data: UpdateBookSuggestionRequest
+): Promise<BookSuggestionResponse> {
+  const { title, author, year, pageCount, link, miscInfo } = data;
+
+  // Validate that at least one field is being updated
+  if (!title && !author && year === undefined && pageCount === undefined && link === undefined && miscInfo === undefined) {
+    throw new Error('At least one field must be provided for update');
+  }
+
+  // Get the existing suggestion to verify ownership and cycle status
+  const existingSuggestion = await db
+    .selectFrom('book_suggestions')
+    .selectAll()
+    .where('id', '=', suggestionId)
+    .where('user_id', '=', userId) // Ensure user owns this suggestion
+    .executeTakeFirst();
+
+  if (!existingSuggestion) {
+    throw new Error('Book suggestion not found or you do not have permission to edit it');
+  }
+
+  // Get the voting cycle to check if we're still in suggestion phase
+  const cycle = await db
+    .selectFrom('voting_cycles')
+    .select(['status', 'suggestion_deadline'])
+    .where('id', '=', existingSuggestion.voting_cycle_id)
+    .executeTakeFirst();
+
+  if (!cycle) {
+    throw new Error('Voting cycle not found');
+  }
+
+  // Check if we're still in the suggesting phase
+  if (cycle.status !== 'suggesting') {
+    throw new Error('Book suggestions can only be edited during the suggesting phase');
+  }
+
+  // Check if suggestion deadline has passed
+  const now = new Date();
+  if (cycle.suggestion_deadline <= now) {
+    throw new Error('Suggestion deadline has passed');
+  }
+
+  // Validate required fields if they're being updated
+  const finalTitle = title !== undefined ? title : existingSuggestion.title;
+  const finalAuthor = author !== undefined ? author : existingSuggestion.author;
+  
+  if (!finalTitle || !finalAuthor) {
+    throw new Error('Title and author are required');
+  }
+
+  // Build update object with only provided fields
+  const updateData: Partial<{
+    title: string;
+    author: string;
+    year: number | null;
+    page_count: number | null;
+    link: string | null;
+    misc_info: string | null;
+  }> = {};
+
+  if (title !== undefined) updateData.title = title;
+  if (author !== undefined) updateData.author = author;
+  if (year !== undefined) updateData.year = year || null;
+  if (pageCount !== undefined) updateData.page_count = pageCount || null;
+  if (link !== undefined) updateData.link = link || null;
+  if (miscInfo !== undefined) updateData.misc_info = miscInfo || null;
+
+  // Update the suggestion
+  const updatedSuggestion = await db
+    .updateTable('book_suggestions')
+    .set(updateData)
+    .where('id', '=', suggestionId)
+    .where('user_id', '=', userId)
+    .returningAll()
+    .executeTakeFirstOrThrow();
+
+  return {
+    id: updatedSuggestion.id,
+    userId: updatedSuggestion.user_id,
+    votingCycleId: updatedSuggestion.voting_cycle_id,
+    title: updatedSuggestion.title,
+    author: updatedSuggestion.author,
+    year: updatedSuggestion.year,
+    pageCount: updatedSuggestion.page_count,
+    link: updatedSuggestion.link,
+    miscInfo: updatedSuggestion.misc_info,
+    createdAt: updatedSuggestion.created_at.toISOString(),
+    updatedAt: updatedSuggestion.updated_at.toISOString(),
   };
 }

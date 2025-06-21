@@ -404,4 +404,164 @@ describe('Book Suggestions Routes', () => {
       await app.close();
     });
   });
+
+  describe('PUT /book-suggestions/:id', () => {
+    it('should update book suggestion successfully', async () => {
+      const { user, token } = await createUserAndToken();
+      const cycle = await createVotingCycle('suggesting');
+      
+      // Create user's suggestion
+      const suggestion = await testDb
+        .insertInto('book_suggestions')
+        .values({
+          user_id: user.id,
+          voting_cycle_id: cycle.id,
+          title: 'Original Title',
+          author: 'Original Author',
+          year: 2020,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      
+      const app = fastify();
+      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      await app.ready();
+
+      const response = await request(app.server)
+        .put(`/book-suggestions/${suggestion.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          title: 'Updated Title',
+          author: 'Updated Author',
+          year: 2023
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        title: 'Updated Title',
+        author: 'Updated Author',
+        year: 2023,
+        userId: user.id
+      });
+
+      await app.close();
+    });
+
+    it('should return 404 for non-existent suggestion', async () => {
+      const { token } = await createUserAndToken();
+      await createVotingCycle('suggesting');
+      
+      const app = fastify();
+      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      await app.ready();
+
+      const response = await request(app.server)
+        .put('/book-suggestions/550e8400-e29b-41d4-a716-446655440000')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          title: 'Updated Title'
+        });
+
+      expect(response.status).toBe(404);
+      expect(response.body).toHaveProperty('error', 'Book suggestion not found or you do not have permission to edit it');
+
+      await app.close();
+    });
+
+    it('should return 403 when suggestion deadline has passed', async () => {
+      const { user, token } = await createUserAndToken();
+      
+      // Create a cycle with past suggestion deadline
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      
+      const cycle = await testDb
+        .insertInto('voting_cycles')
+        .values({
+          suggestion_deadline: yesterday,
+          voting_deadline: tomorrow,
+          status: 'suggesting',
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      
+      // Create user's suggestion
+      const suggestion = await testDb
+        .insertInto('book_suggestions')
+        .values({
+          user_id: user.id,
+          voting_cycle_id: cycle.id,
+          title: 'Original Title',
+          author: 'Original Author',
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      
+      const app = fastify();
+      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      await app.ready();
+
+      const response = await request(app.server)
+        .put(`/book-suggestions/${suggestion.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          title: 'Updated Title'
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body).toHaveProperty('error', 'Suggestion deadline has passed');
+
+      await app.close();
+    });
+
+    it('should return 403 when not in suggesting phase', async () => {
+      const { user, token } = await createUserAndToken();
+      const cycle = await createVotingCycle('voting'); // Not in suggesting phase
+      
+      // Create user's suggestion
+      const suggestion = await testDb
+        .insertInto('book_suggestions')
+        .values({
+          user_id: user.id,
+          voting_cycle_id: cycle.id,
+          title: 'Original Title',
+          author: 'Original Author',
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      
+      const app = fastify();
+      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      await app.ready();
+
+      const response = await request(app.server)
+        .put(`/book-suggestions/${suggestion.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          title: 'Updated Title'
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body).toHaveProperty('error', 'Book suggestions can only be edited during the suggesting phase');
+
+      await app.close();
+    });
+
+    it('should return 401 without token', async () => {
+      const app = fastify();
+      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      await app.ready();
+
+      const response = await request(app.server)
+        .put('/book-suggestions/some-id')
+        .send({
+          title: 'Updated Title'
+        });
+
+      expect(response.status).toBe(401);
+      expect(response.body).toHaveProperty('error', 'Access token required');
+
+      await app.close();
+    });
+  });
 });
