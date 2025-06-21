@@ -4,7 +4,7 @@ A vibe-coded book club app for small groups (5–20 members).
 Suggest books ➡️ vote together ➡️ see what wins. All phases are managed with clear deadlines.  
 Built with Docker, tested with Vitest.
 
-![Results image](/docs/results.png.png)
+![Results image](docs/results.png)
 
 ---
 
