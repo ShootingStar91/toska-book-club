@@ -7,18 +7,26 @@ interface HeaderProps {
 
 export function Header({ user, onLogout }: HeaderProps) {
   return (
-    <header className="bg-gray-800 border-b border-gray-700">
-      <div className="w-full px-4 py-4 sm:px-6">
+    <header className="bg-gray-800 border-b border-gray-700 shadow-2xl relative">
+      <div className="relative w-full px-4 py-4 sm:px-6">
         <div className="flex flex-col items-center justify-center">
-          <h1 className="text-2xl sm:text-3xl font-bold text-orange-500 mb-2 pb-2">
-            Toska Book Club
+          <h1 className="text-2xl sm:text-3xl font-bold text-orange-500 mb-2 pb-2 relative">
+            <span className="relative z-10">
+              Toska Book Club
+            </span>
+            {/* Multiple glow layers for enhanced effect */}
+            <div className="absolute inset-0 text-orange-500 blur-lg opacity-30">Toska Book Club</div>
+            <div className="absolute inset-0 text-orange-500 blur-md opacity-20">Toska Book Club</div>
+            <div className="absolute inset-0 text-orange-500 blur-sm opacity-40">Toska Book Club</div>
+            {/* Radial glow emanating from text */}
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-20 bg-orange-500/10 blur-2xl rounded-full"></div>
           </h1>
           {user && (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 backdrop-blur-sm bg-gray-900/30 px-4 py-2 rounded-full border border-gray-700/50">
               <span className="text-gray-300 text-sm sm:text-base">
-                Logged in as {user.username}
+                Logged in as <span className="text-white font-medium">{user.username}</span>
                 {user.isAdmin && (
-                  <span className="ml-2 px-2 py-1 bg-orange-600 text-white text-xs rounded">
+                  <span className="ml-2 px-2 py-1 bg-orange-600 text-white text-xs rounded-full shadow-lg">
                     Admin
                   </span>
                 )}
@@ -26,7 +34,7 @@ export function Header({ user, onLogout }: HeaderProps) {
               {onLogout && (
                 <button
                   onClick={onLogout}
-                  className="bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded-md text-sm transition-colors border-none outline-none"
+                  className="bg-gray-600/80 hover:bg-gray-700 text-white px-3 py-1 rounded-full text-sm transition-all duration-200 border-none outline-none hover:shadow-lg backdrop-blur-sm"
                 >
                   Logout
                 </button>
