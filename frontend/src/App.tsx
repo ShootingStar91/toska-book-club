@@ -57,13 +57,16 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-gray-900 flex flex-col">
         <Header user={user} onLogout={user ? handleLogout : undefined} />
-        <div className="flex-1 flex items-center justify-center p-4">
+        <div className="flex-1 flex items-start justify-center pt-16 p-4">
           {user ? (
             <PhaseView user={user} />
           ) : showRegistration ? (
             <RegistrationForm onBackToLogin={handleBackToLogin} />
           ) : (
-            <LoginForm onLoginSuccess={handleLoginSuccess} onShowRegistration={handleShowRegistration} />
+            <LoginForm
+              onLoginSuccess={handleLoginSuccess}
+              onShowRegistration={handleShowRegistration}
+            />
           )}
         </div>
       </div>

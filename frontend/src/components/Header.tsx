@@ -1,7 +1,7 @@
 import type { User } from '../shared-types';
 
 interface HeaderProps {
-  user?: User;
+  user?: User | null;
   onLogout?: () => void;
 }
 

@@ -30,8 +30,8 @@ export function LoginForm({ onLoginSuccess, onShowRegistration }: LoginFormProps
 
   return (
     <div className="max-w-md w-full space-y-8" style={{ margin: '0 2px' }}>
-      <div className="text-center">
-        <p className="text-gray-300 text-lg mb-6">Sign in to your account</p>
+      <div className="text-center" style={{ marginBottom: '32px' }}>
+        <h2 className="text-gray-200 text-2xl font-semibold">Sign in to your account</h2>
       </div>
 
         <form onSubmit={handleSubmit}>
