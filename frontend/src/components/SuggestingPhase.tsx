@@ -275,19 +275,11 @@ export function SuggestingPhase({ cycle }: SuggestingPhaseProps) {
                   !formData.title.trim() ||
                   !formData.author.trim()
                 }
-                className="bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md transition-colors"
+                className="mx-auto bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md transition-colors"
               >
                 {createSuggestionMutation.isPending
                   ? 'Submitting...'
                   : 'Submit Suggestion'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md transition-colors"
-                disabled={createSuggestionMutation.isPending}
-              >
-                Cancel
               </button>
             </div>
           </form>
