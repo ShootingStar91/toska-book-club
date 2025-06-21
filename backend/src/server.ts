@@ -5,12 +5,19 @@ import { authRoute } from "./routes/auth/route";
 import { votingCyclesRoute } from "./routes/voting-cycles/route";
 import { bookSuggestionsRoute } from "./routes/book-suggestions/route";
 import { votesRoute } from "./routes/votes/route";
+import { customLogger, errorLogger } from "./middleware/logging";
 
-const server = fastify({ logger: true });
+const server = fastify({ logger: false });
 
 server.register(cors, {
   origin: true
 });
+
+// Add custom logging middleware
+server.addHook('onResponse', customLogger);
+
+// Add error logging middleware
+server.setErrorHandler(errorLogger);
 
 server.register(helloworldRoute);
 server.register(authRoute, { prefix: '/auth' });
