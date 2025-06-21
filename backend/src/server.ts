@@ -10,7 +10,8 @@ import { customLogger, errorLogger } from "./middleware/logging";
 const server = fastify({ logger: false });
 
 server.register(cors, {
-  origin: true
+  origin: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 });
 
 // Add custom logging middleware

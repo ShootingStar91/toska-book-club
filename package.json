@@ -9,7 +9,8 @@
     "migrate:down": "docker compose -f docker-compose.dev.yml exec backend npm run migrate:down",
     "install:backend": "docker compose -f docker-compose.dev.yml exec backend npm ci",
     "install:frontend": "docker compose -f docker-compose.dev.yml exec frontend npm ci",
-    "pgcli": "pgcli -h localhost -p 5432 -U postgres -d toska_book_club"
+    "pgcli": "pgcli -h localhost -p 5432 -U postgres -d toska_book_club",
+    "init-test-data": "docker cp ./backend/init-test-data.sql $(docker ps -qf \"name=database\"):/tmp/init-test-data.sql && docker exec $(docker ps -qf \"name=database\") psql -U postgres -d toska_book_club -f /tmp/init-test-data.sql"
   },
   "keywords": [],
   "author": "",

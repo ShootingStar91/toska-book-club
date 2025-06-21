@@ -73,11 +73,3 @@ vitest run path/to/file.test.ts  # Single test file
 ---
 
 Contribute with issues or PRs – we welcome ideas! ✨
-
-```
-
----
-
-Let me know if you'd like to add badges, screenshots, or usage examples too.
-
-```

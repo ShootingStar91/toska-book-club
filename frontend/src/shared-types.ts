@@ -67,6 +67,11 @@ export interface CreateVotingCycleRequest {
   votingDeadline: string;
 }
 
+export interface UpdateVotingCycleRequest {
+  suggestionDeadline?: string;
+  votingDeadline?: string;
+}
+
 export interface SubmitVotesRequest {
   bookSuggestionIds: string[];
 }

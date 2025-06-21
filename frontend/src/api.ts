@@ -66,6 +66,11 @@ interface CreateVotingCycleRequest {
   votingDeadline: string;
 }
 
+interface UpdateVotingCycleRequest {
+  suggestionDeadline?: string;
+  votingDeadline?: string;
+}
+
 interface SubmitVotesRequest {
   bookSuggestionIds: string[];
 }
@@ -147,6 +152,13 @@ export const votingCyclesApi = {
   create: async (data: CreateVotingCycleRequest): Promise<VotingCycle> => {
     return apiRequest<VotingCycle>('/voting-cycles', {
       method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  
+  update: async (cycleId: string, data: UpdateVotingCycleRequest): Promise<VotingCycle> => {
+    return apiRequest<VotingCycle>(`/voting-cycles/${cycleId}`, {
+      method: 'PUT',
       body: JSON.stringify(data),
     });
   },

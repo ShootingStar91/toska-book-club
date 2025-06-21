@@ -149,6 +149,40 @@ describe('Voting Cycles Routes', () => {
       await app.close();
     });
 
+    it('should return 409 when trying to create cycle while one is active', async () => {
+      const { token } = await createUserAndToken(true);
+      
+      const app = fastify();
+      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      await app.ready();
+
+      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const dayAfterTomorrow = new Date(Date.now() + 48 * 60 * 60 * 1000);
+
+      // Create first cycle
+      await request(app.server)
+        .post('/voting-cycles')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          suggestionDeadline: tomorrow.toISOString(),
+          votingDeadline: dayAfterTomorrow.toISOString()
+        });
+
+      // Try to create second cycle
+      const response = await request(app.server)
+        .post('/voting-cycles')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          suggestionDeadline: tomorrow.toISOString(),
+          votingDeadline: dayAfterTomorrow.toISOString()
+        });
+
+      expect(response.status).toBe(409);
+      expect(response.body).toHaveProperty('error', 'Cannot create a new voting cycle while one is still active');
+
+      await app.close();
+    });
+
     it('should return 400 for voting deadline before suggestion deadline', async () => {
       const { token } = await createUserAndToken(true);
       
@@ -235,6 +269,273 @@ describe('Voting Cycles Routes', () => {
 
       expect(response.status).toBe(401);
       expect(response.body).toHaveProperty('error', 'Access token required');
+
+      await app.close();
+    });
+  });
+
+  describe('PUT /voting-cycles/:id', () => {
+    it('should update voting cycle deadlines for admin user', async () => {
+      const { token } = await createUserAndToken(true);
+      
+      const app = fastify();
+      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      await app.ready();
+
+      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const dayAfterTomorrow = new Date(Date.now() + 48 * 60 * 60 * 1000);
+
+      // Create cycle first
+      const createResponse = await request(app.server)
+        .post('/voting-cycles')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          suggestionDeadline: tomorrow.toISOString(),
+          votingDeadline: dayAfterTomorrow.toISOString()
+        });
+
+      const cycleId = createResponse.body.id;
+
+      // Update deadlines
+      const newSuggestionDeadline = new Date(Date.now() + 36 * 60 * 60 * 1000);
+      const newVotingDeadline = new Date(Date.now() + 72 * 60 * 60 * 1000);
+
+      const response = await request(app.server)
+        .put(`/voting-cycles/${cycleId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          suggestionDeadline: newSuggestionDeadline.toISOString(),
+          votingDeadline: newVotingDeadline.toISOString()
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        id: cycleId,
+        status: 'suggesting',
+        suggestionDeadline: newSuggestionDeadline.toISOString(),
+        votingDeadline: newVotingDeadline.toISOString()
+      });
+
+      await app.close();
+    });
+
+    it('should update only suggestion deadline', async () => {
+      const { token } = await createUserAndToken(true);
+      
+      const app = fastify();
+      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      await app.ready();
+
+      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const dayAfterTomorrow = new Date(Date.now() + 48 * 60 * 60 * 1000);
+
+      // Create cycle
+      const createResponse = await request(app.server)
+        .post('/voting-cycles')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          suggestionDeadline: tomorrow.toISOString(),
+          votingDeadline: dayAfterTomorrow.toISOString()
+        });
+
+      const cycleId = createResponse.body.id;
+      const originalVotingDeadline = createResponse.body.votingDeadline;
+
+      // Update only suggestion deadline
+      const newSuggestionDeadline = new Date(Date.now() + 36 * 60 * 60 * 1000);
+
+      const response = await request(app.server)
+        .put(`/voting-cycles/${cycleId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          suggestionDeadline: newSuggestionDeadline.toISOString()
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.suggestionDeadline).toBe(newSuggestionDeadline.toISOString());
+      expect(response.body.votingDeadline).toBe(originalVotingDeadline);
+
+      await app.close();
+    });
+
+    it('should return 403 for non-admin user', async () => {
+      const { token: adminToken } = await createUserAndToken(true);
+      const { token: userToken } = await createUserAndToken(false);
+      
+      const app = fastify();
+      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      await app.ready();
+
+      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const dayAfterTomorrow = new Date(Date.now() + 48 * 60 * 60 * 1000);
+
+      // Create cycle as admin
+      const createResponse = await request(app.server)
+        .post('/voting-cycles')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          suggestionDeadline: tomorrow.toISOString(),
+          votingDeadline: dayAfterTomorrow.toISOString()
+        });
+
+      const cycleId = createResponse.body.id;
+
+      // Try to update as regular user
+      const response = await request(app.server)
+        .put(`/voting-cycles/${cycleId}`)
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({
+          suggestionDeadline: new Date(Date.now() + 36 * 60 * 60 * 1000).toISOString()
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body).toHaveProperty('error', 'Admin access required');
+
+      await app.close();
+    });
+
+    it('should return 401 without token', async () => {
+      const app = fastify();
+      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      await app.ready();
+
+      const response = await request(app.server)
+        .put('/voting-cycles/some-id')
+        .send({
+          suggestionDeadline: new Date().toISOString()
+        });
+
+      expect(response.status).toBe(401);
+      expect(response.body).toHaveProperty('error', 'Access token required');
+
+      await app.close();
+    });
+
+    it('should return 404 for non-existent cycle', async () => {
+      const { token } = await createUserAndToken(true);
+      
+      const app = fastify();
+      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      await app.ready();
+
+      const response = await request(app.server)
+        .put('/voting-cycles/550e8400-e29b-41d4-a716-446655440000')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          suggestionDeadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        });
+
+      expect(response.status).toBe(404);
+      expect(response.body).toHaveProperty('error', 'Voting cycle not found');
+
+      await app.close();
+    });
+
+    it('should allow past suggestion deadline', async () => {
+      const { token } = await createUserAndToken(true);
+      
+      const app = fastify();
+      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      await app.ready();
+
+      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const dayAfterTomorrow = new Date(Date.now() + 48 * 60 * 60 * 1000);
+
+      // Create cycle
+      const createResponse = await request(app.server)
+        .post('/voting-cycles')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          suggestionDeadline: tomorrow.toISOString(),
+          votingDeadline: dayAfterTomorrow.toISOString()
+        });
+
+      const cycleId = createResponse.body.id;
+
+      // Update with past deadline (should now be allowed)
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+      const response = await request(app.server)
+        .put(`/voting-cycles/${cycleId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          suggestionDeadline: yesterday.toISOString()
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.suggestionDeadline).toBe(yesterday.toISOString());
+
+      await app.close();
+    });
+
+    it('should return 400 for voting deadline before suggestion deadline', async () => {
+      const { token } = await createUserAndToken(true);
+      
+      const app = fastify();
+      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      await app.ready();
+
+      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const dayAfterTomorrow = new Date(Date.now() + 48 * 60 * 60 * 1000);
+
+      // Create cycle
+      const createResponse = await request(app.server)
+        .post('/voting-cycles')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          suggestionDeadline: tomorrow.toISOString(),
+          votingDeadline: dayAfterTomorrow.toISOString()
+        });
+
+      const cycleId = createResponse.body.id;
+
+      // Try to update with invalid voting deadline
+      const today = new Date(Date.now() + 12 * 60 * 60 * 1000);
+
+      const response = await request(app.server)
+        .put(`/voting-cycles/${cycleId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          votingDeadline: today.toISOString()
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('error', 'Voting deadline must be after suggestion deadline');
+
+      await app.close();
+    });
+
+    it('should return 400 for invalid date format', async () => {
+      const { token } = await createUserAndToken(true);
+      
+      const app = fastify();
+      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      await app.ready();
+
+      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const dayAfterTomorrow = new Date(Date.now() + 48 * 60 * 60 * 1000);
+
+      // Create cycle
+      const createResponse = await request(app.server)
+        .post('/voting-cycles')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          suggestionDeadline: tomorrow.toISOString(),
+          votingDeadline: dayAfterTomorrow.toISOString()
+        });
+
+      const cycleId = createResponse.body.id;
+
+      // Try to update with invalid date format
+      const response = await request(app.server)
+        .put(`/voting-cycles/${cycleId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          suggestionDeadline: 'invalid-date'
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('error', 'Invalid suggestion deadline format');
 
       await app.close();
     });
