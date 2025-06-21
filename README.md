@@ -1,10 +1,10 @@
 # 📚 Toska Book Club
 
-A vibe-coded book club app for small groups (5–20 members).  
+A vibe-coded book club app for small groups.  
 Suggest books ➡️ vote together ➡️ see what wins. All phases are managed with clear deadlines.  
 Built with Docker, tested with Vitest.
 
-![Results image](docs/results.png)
+<img src="docs/results.png" alt="Results image" width="500"/>
 
 ---
 
@@ -17,28 +17,6 @@ Built with Docker, tested with Vitest.
 - 🛠️ **Admin powers**: Start a new round by setting suggestion & voting deadlines.
 
 See full list: [docs/feats.md](docs/feats.md)
-
----
-
-## 🛠️ Getting Started
-
-Make sure Docker is running.
-
-### ▶️ Run the app
-
-```bash
-npm run dev
-```
-
-### 🧪 Run tests
-
-```bash
-npm test            # Watch mode
-npm run test:run    # One-off test run
-vitest run path/to/file.test.ts  # Single test file
-```
-
----
 
 ## 🧰 Commands
 
@@ -53,13 +31,15 @@ vitest run path/to/file.test.ts  # Single test file
 - `npm run migrate:up` – Run latest DB migrations
 - `npm run migrate:down` – Revert last DB migration
 - `npm run init-test-data` – Load test data into DB
-- `npm run pgcli` – Open Postgres CLI (requires [pgcli](https://github.com/dbcli/pgcli) to be installed. For example, `sudo apt install pgcli` may work)
+- `npm run pgcli` – Open Postgres CLI (requires [pgcli](https://github.com/dbcli/pgcli) to be installed). `password` is the password
 
 ### ✅ Tests
 
 - `npm test` – Run tests in watch mode
 - `npm run test:run` – Run all tests once
 - `npm run test:api` – Run backend tests
+
+See [test data description](docs/test-users.md)
 
 ---
 
