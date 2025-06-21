@@ -30,8 +30,8 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
     if (userVotes.length > 0) {
       const votedBookIds = userVotes.map((vote: Vote) => vote.bookSuggestionId);
       // Filter out user's own book if it somehow got voted for
-      const validVotedBookIds = votedBookIds.filter(bookId => {
-        const suggestion = suggestions.find(s => s.id === bookId);
+      const validVotedBookIds = votedBookIds.filter((bookId) => {
+        const suggestion = suggestions.find((s) => s.id === bookId);
         return suggestion && suggestion.userId !== user.id;
       });
       setSelectedBookIds(validVotedBookIds);
@@ -43,7 +43,9 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
     mutationFn: (bookSuggestionIds: string[]) =>
       votesApi.submit({ bookSuggestionIds }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.votes.userVotes(cycle.id) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.votes.userVotes(cycle.id),
+      });
     },
   });
 
@@ -52,10 +54,10 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
     if (isOwnBook) {
       return;
     }
-    
-    setSelectedBookIds(prev =>
+
+    setSelectedBookIds((prev) =>
       prev.includes(bookId)
-        ? prev.filter(id => id !== bookId)
+        ? prev.filter((id) => id !== bookId)
         : [...prev, bookId]
     );
   };
@@ -84,10 +86,12 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
           Voting Phase
         </h2>
         <p className="text-gray-300 mb-4">
-          Vote for your favorite book suggestions. Click on any books you'd like to vote for.
+          Vote for all the books that you'd like to read by clicking them.
+          Finally, click the Submit votes button. You can update your votes
+          afterwards too.
         </p>
         <div className="text-sm text-gray-400">
-          <p>Voting deadline: {votingDeadline.toLocaleString()}</p>
+          <p>Voting deadline: {votingDeadline.toLocaleString('fi-FI')}</p>
         </div>
       </div>
 
@@ -95,15 +99,17 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
         <h3 className="text-lg font-semibold text-white mb-4">
           Book Suggestions ({suggestions.length})
         </h3>
-        
+
         {suggestions.length === 0 ? (
-          <p className="text-gray-400">No book suggestions available for voting.</p>
+          <p className="text-gray-400">
+            No book suggestions available for voting.
+          </p>
         ) : (
           <div className="space-y-3">
             {suggestions.map((suggestion: BookSuggestion) => {
               const isSelected = selectedBookIds.includes(suggestion.id);
               const isOwnBook = suggestion.userId === user.id;
-              
+
               return (
                 <div
                   key={suggestion.id}
@@ -112,8 +118,8 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
                     isOwnBook
                       ? 'border-yellow-500 bg-yellow-500/10 cursor-not-allowed'
                       : isSelected
-                      ? 'border-orange-500 bg-orange-500/10 cursor-pointer'
-                      : 'border-gray-600 bg-gray-700/50 hover:border-gray-500 cursor-pointer'
+                        ? 'border-orange-500 bg-orange-500/10 cursor-pointer'
+                        : 'border-gray-600 bg-gray-700/50 hover:border-gray-500 cursor-pointer'
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -124,13 +130,13 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
                       <p className="text-gray-300 mb-2">
                         by {suggestion.author}
                       </p>
-                      
+
                       {isOwnBook && (
                         <p className="text-yellow-400 text-sm mb-2 font-medium">
                           Your suggestion - Cannot vote for your own book
                         </p>
                       )}
-                      
+
                       <div className="flex flex-wrap gap-3 text-sm text-gray-400">
                         {suggestion.year && (
                           <span>Year: {suggestion.year}</span>
@@ -139,7 +145,7 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
                           <span>Pages: {suggestion.pageCount}</span>
                         )}
                       </div>
-                      
+
                       {suggestion.link && (
                         <a
                           href={suggestion.link}
@@ -151,14 +157,14 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
                           View Link →
                         </a>
                       )}
-                      
+
                       {suggestion.miscInfo && (
                         <p className="text-gray-400 text-sm mt-2">
                           {suggestion.miscInfo}
                         </p>
                       )}
                     </div>
-                    
+
                     <div className="ml-4">
                       {isSelected && !isOwnBook && (
                         <div className="text-orange-500">
@@ -202,29 +208,40 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
           <div className="mt-6 pt-4 border-t border-gray-700">
             <div className="flex items-center justify-between">
               <p className="text-gray-300">
-                Selected: {selectedBookIds.length} book{selectedBookIds.length !== 1 ? 's' : ''}
+                Selected: {selectedBookIds.length} book
+                {selectedBookIds.length !== 1 ? 's' : ''}
               </p>
-              
+
               <button
                 onClick={handleSubmitVotes}
                 disabled={submitVotesMutation.isPending}
                 className="bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-2 rounded-md font-medium transition-colors flex items-center gap-2"
               >
-                {submitVotesMutation.isPending ? 'Submitting...' : 'Submit Votes'}
+                {submitVotesMutation.isPending
+                  ? 'Submitting...'
+                  : 'Submit votes'}
                 {!submitVotesMutation.isPending && (
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 )}
               </button>
             </div>
-            
+
             {submitVotesMutation.error && (
               <div className="mt-3 bg-red-900 border border-red-700 text-red-300 px-4 py-3 rounded-md text-sm">
                 {submitVotesMutation.error.message}
               </div>
             )}
-            
+
             {submitVotesMutation.isSuccess && (
               <div className="mt-3 bg-green-900 border border-green-700 text-green-300 px-4 py-3 rounded-md text-sm">
                 Votes submitted successfully!

@@ -24,13 +24,13 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
   // Initialize form data when editing
   const initializeEditForm = () => {
     if (currentCycle) {
-      // Convert ISO strings to datetime-local format
+      // Convert ISO strings to date format (YYYY-MM-DD)
       const suggestionDate = new Date(currentCycle.suggestionDeadline);
       const votingDate = new Date(currentCycle.votingDeadline);
       
       setFormData({
-        suggestionDeadline: suggestionDate.toISOString().slice(0, 16),
-        votingDeadline: votingDate.toISOString().slice(0, 16),
+        suggestionDeadline: suggestionDate.toISOString().slice(0, 10),
+        votingDeadline: votingDate.toISOString().slice(0, 10),
       });
     }
   };
@@ -62,9 +62,14 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
       return;
     }
 
-    // Convert datetime-local back to ISO strings
-    const suggestionISOString = new Date(formData.suggestionDeadline).toISOString();
-    const votingISOString = new Date(formData.votingDeadline).toISOString();
+    // Convert date to end of day (23:59:59.999) and then to ISO strings
+    const suggestionDate = new Date(formData.suggestionDeadline);
+    suggestionDate.setHours(23, 59, 59, 999);
+    const suggestionISOString = suggestionDate.toISOString();
+    
+    const votingDate = new Date(formData.votingDeadline);
+    votingDate.setHours(23, 59, 59, 999);
+    const votingISOString = votingDate.toISOString();
 
     if (isEditing && currentCycle) {
       updateCycleMutation.mutate({
@@ -91,11 +96,10 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
     setShowForm(true);
   };
 
-  // Helper to get minimum datetime (now + 1 hour)
-  const getMinDateTime = () => {
-    const now = new Date();
-    now.setHours(now.getHours() + 1);
-    return now.toISOString().slice(0, 16);
+  // Helper to get minimum date (today)
+  const getMinDate = () => {
+    const today = new Date();
+    return today.toISOString().slice(0, 10);
   };
 
   // Get the current mutation for loading state and errors
@@ -111,7 +115,7 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
           >
             {isEditing ? 'Edit Current Cycle' : 'Start New Voting Cycle'}
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+              <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
             </svg>
           </button>
         ) : (
@@ -126,7 +130,7 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
                     Suggestion Deadline
                   </label>
                   <input
-                    type="datetime-local"
+                    type="date"
                     value={formData.suggestionDeadline}
                     onChange={(e) =>
                       setFormData({
@@ -134,8 +138,9 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
                         suggestionDeadline: e.target.value,
                       })
                     }
-                    min={isEditing ? undefined : getMinDateTime()}
+                    min={isEditing ? undefined : getMinDate()}
                     className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md text-white focus:outline-none focus:border-orange-500"
+                    lang="fi"
                     required
                     disabled={currentMutation.isPending}
                   />
@@ -145,7 +150,7 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
                     Voting Deadline
                   </label>
                   <input
-                    type="datetime-local"
+                    type="date"
                     value={formData.votingDeadline}
                     onChange={(e) =>
                       setFormData({
@@ -153,8 +158,9 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
                         votingDeadline: e.target.value,
                       })
                     }
-                    min={isEditing ? undefined : (formData.suggestionDeadline || getMinDateTime())}
+                    min={isEditing ? undefined : (formData.suggestionDeadline || getMinDate())}
                     className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md text-white focus:outline-none focus:border-orange-500"
+                    lang="fi"
                     required
                     disabled={currentMutation.isPending}
                   />

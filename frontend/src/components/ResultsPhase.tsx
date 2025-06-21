@@ -56,7 +56,7 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
           Voting has ended. Here are the final results!
         </p>
         <div className="text-sm text-gray-400">
-          <p>Cycle ended: {new Date(cycle.votingDeadline).toLocaleString()}</p>
+          <p>Cycle ended: {new Date(cycle.votingDeadline).toLocaleString('fi-FI')}</p>
           <p>Total votes cast: {totalVotes}</p>
           <p>Books in competition: {sortedResults.length}</p>
         </div>
