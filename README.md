@@ -9,8 +9,17 @@ The app has three phases of a **voting cycle**:
 - Results: Results are shown.
 
 The cycles are automatically changed based on deadlines for each phase set by admin.
+
 When results are shown, a voting cycle is completed. Admin can then start a new one. While a cycle is ongoing, admin can edit the deadlines.
+
 When a user first enters the page, they need to either login, or register. Registering requires a secret value, so only book club members can join.
+
+The voting can either be normal or ranking.
+
+- Normal means each user can give one vote to as many books as they like, 1 vote equaling 1 point. User cannot vote for their own book.
+- Ranking means that user must drag the suggestions in the order they desire. Top suggestion gets N points where N is the amount of books below it in the order.
+
+If books are tied in the results phase, the program will decide the winner randomly.
 
 **Built using:** React, Typescript, TailwindCSS, Tanstack-Query, Kysely, PostgreSQL, Eslint, Docker, Vite.
 
@@ -61,17 +70,8 @@ See full list: [docs/feats.md](docs/feats.md)
 
 ## 💡 Future Ideas
 
-Likely to implement:
-
-- Rank-based voting
-
-Maybe in the future:
-
 - Suggest possible times for next meeting
 - Book feedback/rating phase
-
-Epic:
-
 - Multi-club support with roles:
   - Superadmin (manage all clubs)
   - Club manager (admin of one club)
