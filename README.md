@@ -61,12 +61,20 @@ See full list: [docs/feats.md](docs/feats.md)
 
 ## 💡 Future Ideas
 
-- 🔢 Rank-based voting
-- ⭐ Book feedback/rating phase
-- 🧑‍🤝‍🧑 Multi-club support with roles:
+Likely to implement:
 
-  - 🧙 Superadmin (manage all clubs)
-  - 👩‍💼 Club manager (admin of one club)
+- Rank-based voting
+
+Maybe in the future:
+
+- Suggest possible times for next meeting
+- Book feedback/rating phase
+
+Epic:
+
+- Multi-club support with roles:
+  - Superadmin (manage all clubs)
+  - Club manager (admin of one club)
 
 ---
 
