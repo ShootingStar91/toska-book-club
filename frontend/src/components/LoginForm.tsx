@@ -29,7 +29,7 @@ export function LoginForm({ onLoginSuccess, onShowRegistration }: LoginFormProps
   };
 
   return (
-    <div className="max-w-md w-full space-y-8">
+    <div className="max-w-md w-full space-y-8" style={{ margin: '0 2px' }}>
       <div className="text-center">
         <p className="text-gray-300 text-lg mb-6">Sign in to your account</p>
       </div>
@@ -47,7 +47,8 @@ export function LoginForm({ onLoginSuccess, onShowRegistration }: LoginFormProps
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+              className="w-full bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+              style={{ padding: '14px 16px' }}
               placeholder="Enter your username"
               disabled={loginMutation.isPending}
               required
@@ -66,7 +67,8 @@ export function LoginForm({ onLoginSuccess, onShowRegistration }: LoginFormProps
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+              className="w-full bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+              style={{ padding: '14px 16px' }}
               placeholder="Enter your password"
               disabled={loginMutation.isPending}
               required
@@ -85,7 +87,8 @@ export function LoginForm({ onLoginSuccess, onShowRegistration }: LoginFormProps
               disabled={
                 loginMutation.isPending || !username.trim() || !password.trim()
               }
-              className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+              className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+              style={{ padding: '14px 16px' }}
             >
               {loginMutation.isPending ? 'Signing in...' : 'Sign in'}
             </button>
@@ -93,8 +96,8 @@ export function LoginForm({ onLoginSuccess, onShowRegistration }: LoginFormProps
             <button
               type="button"
               onClick={onShowRegistration}
-              className="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-              style={{ marginTop: '16px' }}
+              className="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+              style={{ marginTop: '16px', padding: '14px 16px' }}
             >
               Create new account
             </button>
