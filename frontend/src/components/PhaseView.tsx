@@ -8,10 +8,9 @@ import type { User } from '../shared-types';
 
 interface PhaseViewProps {
   user: User;
-  onLogout: () => void;
 }
 
-export function PhaseView({ user, onLogout }: PhaseViewProps) {
+export function PhaseView({ user }: PhaseViewProps) {
   const {
     data: currentCycle,
     isLoading,
@@ -42,39 +41,12 @@ export function PhaseView({ user, onLogout }: PhaseViewProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700">
-        <div className="max-w-4xl mx-auto px-4 py-4 sm:px-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl sm:text-3xl font-bold text-orange-500">
-              Toska Book Club
-            </h1>
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-300 text-sm sm:text-base">
-                Welcome, {user.username}
-                {user.isAdmin && (
-                  <span className="ml-2 px-2 py-1 bg-orange-600 text-white text-xs rounded">
-                    Admin
-                  </span>
-                )}
-              </span>
-              <button
-                onClick={onLogout}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded-md text-sm transition-colors"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
+    <div className="w-full max-w-4xl">
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-6 sm:px-6">
+      <main className="px-4 py-6 sm:px-6 text-center">
         {(error as { status?: number })?.status === 404 || !currentCycle ? (
           // No active cycle
-          <div className="text-center py-12">
+          <div className="py-12">
             <div className="text-gray-400 text-xl mb-4">
               No active voting cycle
             </div>
@@ -86,7 +58,7 @@ export function PhaseView({ user, onLogout }: PhaseViewProps) {
           </div>
         ) : error ? (
           // Other errors
-          <div className="text-center py-12">
+          <div className="py-12">
             <div className="text-red-400 text-xl mb-4">
               Error loading voting cycle
             </div>
@@ -112,10 +84,10 @@ export function PhaseView({ user, onLogout }: PhaseViewProps) {
             )}
           </div>
         )}
-      </main>
 
-      {/* Admin Controls */}
-      {user.isAdmin && <AdminControls onCycleCreated={handleCycleCreated} />}
+        {/* Admin Controls */}
+        {user.isAdmin && <AdminControls onCycleCreated={handleCycleCreated} />}
+      </main>
     </div>
   );
 }

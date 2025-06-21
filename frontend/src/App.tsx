@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './api';
 import { getValidToken, getUserFromToken, removeAuthToken } from './auth';
+import { Header } from './components/Header';
 import { LoginForm } from './components/LoginForm';
 import { RegistrationForm } from './components/RegistrationForm';
 import { PhaseView } from './components/PhaseView';
@@ -54,14 +55,17 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-gray-900">
-        {user ? (
-          <PhaseView user={user} onLogout={handleLogout} />
-        ) : showRegistration ? (
-          <RegistrationForm onBackToLogin={handleBackToLogin} />
-        ) : (
-          <LoginForm onLoginSuccess={handleLoginSuccess} onShowRegistration={handleShowRegistration} />
-        )}
+      <div className="min-h-screen bg-gray-900 flex flex-col">
+        <Header user={user} onLogout={user ? handleLogout : undefined} />
+        <div className="flex-1 flex items-center justify-center p-4">
+          {user ? (
+            <PhaseView user={user} />
+          ) : showRegistration ? (
+            <RegistrationForm onBackToLogin={handleBackToLogin} />
+          ) : (
+            <LoginForm onLoginSuccess={handleLoginSuccess} onShowRegistration={handleShowRegistration} />
+          )}
+        </div>
       </div>
     </QueryClientProvider>
   );

@@ -29,14 +29,10 @@ export function LoginForm({ onLoginSuccess, onShowRegistration }: LoginFormProps
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-orange-500 mb-2">
-            Toska Book Club
-          </h1>
-          <p className="text-gray-300">Sign in to your account</p>
-        </div>
+    <div className="max-w-md w-full space-y-8">
+      <div className="text-center">
+        <p className="text-gray-300 text-lg mb-6">Sign in to your account</p>
+      </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -101,7 +97,6 @@ export function LoginForm({ onLoginSuccess, onShowRegistration }: LoginFormProps
             Create new account
           </button>
         </form>
-      </div>
     </div>
   );
 }
