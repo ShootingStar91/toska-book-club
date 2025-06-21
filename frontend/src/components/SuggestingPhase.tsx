@@ -13,6 +13,12 @@ interface SuggestingPhaseProps {
   user: User;
 }
 
+// Helper function to format URL for display
+const formatUrlForDisplay = (url: string): string => {
+  const cleanUrl = url.replace(/^https?:\/\//, '');
+  return cleanUrl.length > 20 ? cleanUrl.substring(0, 20) + '...' : cleanUrl;
+};
+
 export function SuggestingPhase({ cycle }: SuggestingPhaseProps) {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
@@ -189,7 +195,7 @@ export function SuggestingPhase({ cycle }: SuggestingPhaseProps) {
                 rel="noopener noreferrer"
                 className="text-orange-400 hover:text-orange-300 text-sm"
               >
-                More info
+                {formatUrlForDisplay(userSuggestion.link)}
               </a>
             )}
             {userSuggestion.miscInfo && (
@@ -399,7 +405,7 @@ export function SuggestingPhase({ cycle }: SuggestingPhaseProps) {
                     rel="noopener noreferrer"
                     className="text-orange-400 hover:text-orange-300 text-sm"
                   >
-                    More info
+                    {formatUrlForDisplay(suggestion.link)}
                   </a>
                 )}
                 {suggestion.miscInfo && (

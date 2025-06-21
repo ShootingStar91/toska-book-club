@@ -2,6 +2,12 @@ import { useQuery } from '@tanstack/react-query';
 import { votesApi, bookSuggestionsApi, queryKeys } from '../api';
 import type { VotingCycle, VoteResult, BookSuggestion } from '../shared-types';
 
+// Helper function to format URL for display
+const formatUrlForDisplay = (url: string): string => {
+  const cleanUrl = url.replace(/^https?:\/\//, '');
+  return cleanUrl.length > 20 ? cleanUrl.substring(0, 20) + '...' : cleanUrl;
+};
+
 interface ResultsPhaseProps {
   cycle: VotingCycle;
 }
@@ -168,7 +174,7 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
                           rel="noopener noreferrer"
                           className="text-orange-400 hover:text-orange-300 text-sm inline-block mb-2"
                         >
-                          View Link →
+                          {formatUrlForDisplay(suggestion.link)}
                         </a>
                       )}
                       

@@ -3,6 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { bookSuggestionsApi, votesApi, queryKeys } from '../api';
 import type { User, VotingCycle, BookSuggestion, Vote } from '../shared-types';
 
+// Helper function to format URL for display
+const formatUrlForDisplay = (url: string): string => {
+  const cleanUrl = url.replace(/^https?:\/\//, '');
+  return cleanUrl.length > 20 ? cleanUrl.substring(0, 20) + '...' : cleanUrl;
+};
+
 interface VotingPhaseProps {
   cycle: VotingCycle;
   user: User;
@@ -312,7 +318,7 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
                           className="text-orange-400 hover:text-orange-300 text-sm mt-2 inline-block"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          View Link →
+                          {formatUrlForDisplay(suggestion.link)}
                         </a>
                       )}
 
