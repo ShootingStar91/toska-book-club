@@ -1,8 +1,20 @@
 # 📚 Toska Book Club
 
-A vibe-coded book club app for small groups.  
-Suggest books ➡️ vote together ➡️ see what wins. All phases are managed with clear deadlines.  
-Built with Docker, tested with Vitest.
+A _vibe-coded_ book club app for small book clubs.
+
+The app has three phases of a **voting cycle**:
+
+- Suggestions: All users can submit one book suggestion
+- Voting: All members give votes
+- Results: Results are shown.
+
+The cycles are automatically changed based on deadlines for each phase set by admin.
+When results are shown, a voting cycle is completed. Admin can then start a new one. While a cycle is ongoing, admin can edit the deadlines.
+When a user first enters the page, they need to either login, or register. Registering requires a secret value, so only book club members can join.
+
+**Built using:** React, Typescript, TailwindCSS, Tanstack-Query, Kysely, PostgreSQL, Eslint, Docker, Vite.
+
+Vibe-coded with Claude Code.
 
 <img src="docs/results.png" alt="Results image" width="500"/>
 
@@ -39,7 +51,11 @@ See full list: [docs/feats.md](docs/feats.md)
 - `npm run test:run` – Run all tests once
 - `npm run test:api` – Run backend tests
 
-See [test data description](docs/test-users.md)
+### Tips
+
+- See [test data description](docs/test-users.md)
+- Test the three phases by logging in with admin-user (`admin - admin123`) and adjusting the deadlines
+- After re-initializing test data, logout and re-login because your user doesn't exist anymore
 
 ---
 
