@@ -30,23 +30,29 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
     );
   }
 
-  // Combine results with full book details
-  const enrichedResults = results.map((result: VoteResult) => {
-    const suggestion = suggestions.find((s: BookSuggestion) => s.id === result.bookSuggestionId);
+  // Create results for all suggestions, including those with no votes
+  const allResults = suggestions.map((suggestion: BookSuggestion) => {
+    const voteResult = results.find((result: VoteResult) => result.bookSuggestionId === suggestion.id);
     return {
-      ...result,
+      bookSuggestionId: suggestion.id,
+      voteCount: voteResult ? voteResult.voteCount : 0,
       suggestion,
     };
-  }).filter(result => result.suggestion); // Filter out any results without suggestions
+  });
 
-  // Sort by vote count (highest first)
-  const sortedResults = enrichedResults.sort((a, b) => b.voteCount - a.voteCount);
+  // Sort by vote count (highest first), then by title for consistent ordering
+  const sortedResults = allResults.sort((a, b) => {
+    if (b.voteCount !== a.voteCount) {
+      return b.voteCount - a.voteCount;
+    }
+    return a.suggestion.title.localeCompare(b.suggestion.title);
+  });
 
   // Determine winner(s) - books with the highest vote count
   const maxVotes = sortedResults.length > 0 ? sortedResults[0].voteCount : 0;
   const winners = sortedResults.filter(result => result.voteCount === maxVotes && result.voteCount > 0);
 
-  const totalVotes = results.reduce((sum: number, result: VoteResult) => sum + result.voteCount, 0);
+  const totalVotes = sortedResults.reduce((sum: number, result) => sum + result.voteCount, 0);
 
   return (
     <div className="space-y-6">
