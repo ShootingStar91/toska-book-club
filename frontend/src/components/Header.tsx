@@ -26,13 +26,7 @@ export function Header({ user, onLogout }: HeaderProps) {
               {onLogout && (
                 <button
                   onClick={onLogout}
-                  className="bg-gray-600 hover:bg-gray-700 text-white rounded-md text-sm transition-colors"
-                  style={{
-                    padding: '1px 8px',
-                    marginBottom: '6px',
-                    border: 'none',
-                    outline: 'none',
-                  }}
+                  className="bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded-md text-sm transition-colors border-none outline-none"
                 >
                   Logout
                 </button>
