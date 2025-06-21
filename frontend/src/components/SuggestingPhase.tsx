@@ -146,9 +146,12 @@ export function SuggestingPhase({ cycle }: SuggestingPhaseProps) {
             </p>
             <button
               onClick={() => setShowForm(!showForm)}
-              className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md transition-colors"
+              className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md transition-colors flex items-center gap-2"
             >
               {showForm ? 'Cancel' : 'Suggest a Book'}
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
             </button>
           </div>
         ) : (
@@ -275,11 +278,16 @@ export function SuggestingPhase({ cycle }: SuggestingPhaseProps) {
                   !formData.title.trim() ||
                   !formData.author.trim()
                 }
-                className="mx-auto bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md transition-colors"
+                className="mx-auto bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md transition-colors flex items-center gap-2"
               >
                 {createSuggestionMutation.isPending
                   ? 'Submitting...'
                   : 'Submit Suggestion'}
+                {!createSuggestionMutation.isPending && (
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
+                  </svg>
+                )}
               </button>
             </div>
           </form>
