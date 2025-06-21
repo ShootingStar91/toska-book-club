@@ -4,6 +4,8 @@ A vibe-coded book club app for small groups (5–20 members).
 Suggest books ➡️ vote together ➡️ see what wins. All phases are managed with clear deadlines.  
 Built with Docker, tested with Vitest.
 
+![Results image](/docs/results.png.png)
+
 ---
 
 ## 🚀 Features
@@ -51,7 +53,7 @@ vitest run path/to/file.test.ts  # Single test file
 - `npm run migrate:up` – Run latest DB migrations
 - `npm run migrate:down` – Revert last DB migration
 - `npm run init-test-data` – Load test data into DB
-- `npm run pgcli` – Open Postgres CLI (localhost)
+- `npm run pgcli` – Open Postgres CLI (requires [pgcli](https://github.com/dbcli/pgcli) to be installed. For example, `sudo apt install pgcli` may work)
 
 ### ✅ Tests
 
