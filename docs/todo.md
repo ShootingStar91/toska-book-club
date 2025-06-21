@@ -4,3 +4,5 @@
   should it be made generated column?
 
 - Add icons to login, create new account, back, etc
+
+- What happens when top suggestions have same amount of votes?
