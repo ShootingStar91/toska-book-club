@@ -1,6 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
 import type {
-  User,
   VotingCycle,
   BookSuggestion,
   LoginRequest,
@@ -31,15 +30,21 @@ import { getValidToken } from './auth';
 const API_BASE_URL = 'http://localhost:3000';
 
 class ApiError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string
+  ) {
     super(message);
     this.name = 'ApiError';
   }
 }
 
-async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+async function apiRequest<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
   const token = getValidToken();
-  
+
   const config: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
@@ -50,12 +55,17 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
   };
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-  
+
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new ApiError(response.status, errorData.error || `HTTP ${response.status}`);
+    const errorData = await response
+      .json()
+      .catch(() => ({ error: 'Unknown error' }));
+    throw new ApiError(
+      response.status,
+      errorData.error || `HTTP ${response.status}`
+    );
   }
-  
+
   return response.json();
 }
 
@@ -67,7 +77,7 @@ export const authApi = {
       body: JSON.stringify(credentials),
     });
   },
-  
+
   register: async (userData: RegisterRequest): Promise<RegisterResponse> => {
     return apiRequest<RegisterResponse>('/auth/register', {
       method: 'POST',
@@ -81,19 +91,22 @@ export const votingCyclesApi = {
   getCurrent: async (): Promise<VotingCycle> => {
     return apiRequest<VotingCycle>('/voting-cycles/current');
   },
-  
+
   getAll: async (): Promise<VotingCycle[]> => {
     return apiRequest<VotingCycle[]>('/voting-cycles');
   },
-  
+
   create: async (data: CreateVotingCycleRequest): Promise<VotingCycle> => {
     return apiRequest<VotingCycle>('/voting-cycles', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
-  
-  update: async (cycleId: string, data: UpdateVotingCycleRequest): Promise<VotingCycle> => {
+
+  update: async (
+    cycleId: string,
+    data: UpdateVotingCycleRequest
+  ): Promise<VotingCycle> => {
     return apiRequest<VotingCycle>(`/voting-cycles/${cycleId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -106,19 +119,24 @@ export const bookSuggestionsApi = {
   getForCycle: async (cycleId: string): Promise<BookSuggestion[]> => {
     return apiRequest<BookSuggestion[]>(`/book-suggestions/cycle/${cycleId}`);
   },
-  
+
   getUserSuggestion: async (cycleId: string): Promise<BookSuggestion> => {
     return apiRequest<BookSuggestion>(`/book-suggestions/my/${cycleId}`);
   },
-  
-  create: async (data: CreateBookSuggestionRequest): Promise<BookSuggestion> => {
+
+  create: async (
+    data: CreateBookSuggestionRequest
+  ): Promise<BookSuggestion> => {
     return apiRequest<BookSuggestion>('/book-suggestions', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
-  
-  update: async (suggestionId: string, data: UpdateBookSuggestionRequest): Promise<BookSuggestion> => {
+
+  update: async (
+    suggestionId: string,
+    data: UpdateBookSuggestionRequest
+  ): Promise<BookSuggestion> => {
     return apiRequest<BookSuggestion>(`/book-suggestions/${suggestionId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -134,11 +152,11 @@ export const votesApi = {
       body: JSON.stringify(data),
     });
   },
-  
+
   getUserVotes: async (cycleId: string): Promise<Vote[]> => {
     return apiRequest<Vote[]>(`/votes/my/${cycleId}`);
   },
-  
+
   getResults: async (cycleId: string): Promise<VoteResult[]> => {
     return apiRequest<VoteResult[]>(`/votes/results/${cycleId}`);
   },
@@ -167,8 +185,10 @@ export const queryKeys = {
   },
   bookSuggestions: {
     all: ['bookSuggestions'] as const,
-    forCycle: (cycleId: string) => ['bookSuggestions', 'cycle', cycleId] as const,
-    userSuggestion: (cycleId: string) => ['bookSuggestions', 'my', cycleId] as const,
+    forCycle: (cycleId: string) =>
+      ['bookSuggestions', 'cycle', cycleId] as const,
+    userSuggestion: (cycleId: string) =>
+      ['bookSuggestions', 'my', cycleId] as const,
   },
   votes: {
     all: ['votes'] as const,

@@ -157,9 +157,7 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
                     <div className="flex items-center justify-between">
                       <span
                         className={`text-lg font-bold ${
-                          isActualWinner
-                            ? 'text-yellow-400'
-                            : 'text-orange-400'
+                          isActualWinner ? 'text-yellow-400' : 'text-orange-400'
                         }`}
                       >
                         #{index + 1}
@@ -167,7 +165,9 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
                       <div className="flex items-center gap-2">
                         <span
                           className={`text-lg font-bold ${
-                            isActualWinner ? 'text-yellow-400' : 'text-orange-400'
+                            isActualWinner
+                              ? 'text-yellow-400'
+                              : 'text-orange-400'
                           }`}
                         >
                           {result.voteCount}
@@ -200,15 +200,11 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
                     </div>
 
                     {/* Third row: Author */}
-                    <p className="text-gray-300">
-                      by {suggestion.author}
-                    </p>
+                    <p className="text-gray-300">by {suggestion.author}</p>
 
                     {/* Fourth row: Year and Pages */}
                     <div className="flex flex-wrap gap-3 text-sm text-gray-400">
-                      {suggestion.year && (
-                        <span>Year: {suggestion.year}</span>
-                      )}
+                      {suggestion.year && <span>Year: {suggestion.year}</span>}
                       {suggestion.pageCount && (
                         <span>Pages: {suggestion.pageCount}</span>
                       )}
