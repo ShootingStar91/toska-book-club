@@ -15,7 +15,9 @@
     "check": "npm run check:backend && npm run check:frontend",
     "test:api": "cd backend && npm run test:run",
     "pgcli": "pgcli -h localhost -p 5432 -U postgres -d toska_book_club",
-    "init-test-data": "docker cp ./backend/init-test-data.sql $(docker ps -qf \"name=database\"):/tmp/init-test-data.sql && docker exec $(docker ps -qf \"name=database\") psql -U postgres -d toska_book_club -f /tmp/init-test-data.sql"
+    "init-suggesting": "docker cp ./backend/init-users.sql $(docker ps -qf \"name=database\"):/tmp/init-users.sql && docker cp ./backend/init-test-data.sql $(docker ps -qf \"name=database\"):/tmp/init-test-data.sql && docker exec $(docker ps -qf \"name=database\") psql -U postgres -d toska_book_club -f /tmp/init-users.sql && docker exec $(docker ps -qf \"name=database\") psql -U postgres -d toska_book_club -f /tmp/init-test-data.sql",
+    "init-voting": "docker cp ./backend/init-users.sql $(docker ps -qf \"name=database\"):/tmp/init-users.sql && docker cp ./backend/init-voting-phase.sql $(docker ps -qf \"name=database\"):/tmp/init-voting-phase.sql && docker exec $(docker ps -qf \"name=database\") psql -U postgres -d toska_book_club -f /tmp/init-users.sql && docker exec $(docker ps -qf \"name=database\") psql -U postgres -d toska_book_club -f /tmp/init-voting-phase.sql",
+    "init-results": "docker cp ./backend/init-users.sql $(docker ps -qf \"name=database\"):/tmp/init-users.sql && docker cp ./backend/init-results-phase.sql $(docker ps -qf \"name=database\"):/tmp/init-results-phase.sql && docker exec $(docker ps -qf \"name=database\") psql -U postgres -d toska_book_club -f /tmp/init-users.sql && docker exec $(docker ps -qf \"name=database\") psql -U postgres -d toska_book_club -f /tmp/init-results-phase.sql"
   },
   "keywords": [],
   "author": "",

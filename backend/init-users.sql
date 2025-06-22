@@ -11,7 +11,7 @@ INSERT INTO users (id, username, email, password_hash, is_admin, created_at, upd
     gen_random_uuid(),
     'admin',
     'admin@example.com',
-    '$2b$10$Qkv/8ACu60Ir5CaN/u1KqeELFt.x61EBBGHiutXZ4BQUeM4IXDwWK', -- password: admin123
+    '$2b$10$DWwtHggGMYNV3qrVQQOZlux3frC29ImKk9BROyB1tSK3sFrfY1qKy', -- password: admin123
     true,
     NOW(),
     NOW()
@@ -20,7 +20,7 @@ INSERT INTO users (id, username, email, password_hash, is_admin, created_at, upd
     gen_random_uuid(),
     'alice',
     'alice@example.com', 
-    '$2b$10$gfAwNqDKylgjaHYvOaQuX.c8QX5tGK6OMzVm6HtXOwIELPozinZyS', -- password: alice123
+    '$2b$10$03R6c2X9MStwszVS52OTJ.IIK1IVWMR6JSM.dkGnjwjJPCElkq90e', -- password: alice123
     false,
     NOW(),
     NOW()
@@ -29,7 +29,7 @@ INSERT INTO users (id, username, email, password_hash, is_admin, created_at, upd
     gen_random_uuid(),
     'bob',
     'bob@example.com',
-    '$2b$10$b/VG677kKn7cP0M9P5xW0.B7sh7xanie9zHdrfBlKuG8rQIqqvLBK', -- password: bob123
+    '$2b$10$dZK9st6Sz3lTwX9o8l6Nwudfxyr0tD6eKKpIZwJq2x8lhzUDv769e', -- password: bob123
     false,
     NOW(),
     NOW()
@@ -38,7 +38,7 @@ INSERT INTO users (id, username, email, password_hash, is_admin, created_at, upd
     gen_random_uuid(),
     'charlie',
     'charlie@example.com',
-    '$2b$10$CjJtWQNqRZhFyH5KxGwfE.2BDt5NhKXzJYpUvFW8wFe4rVaEn6p5.', -- password: charlie123
+    '$2b$10$98FmBB4I8lUrDYhHe4oOYe2g29ruUtjSRZUOdfPuRnjZuBNDcWELC', -- password: charlie123
     false,
     NOW(),
     NOW()
