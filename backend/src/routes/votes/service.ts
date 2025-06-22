@@ -1,5 +1,6 @@
 import { db } from '../../database';
 import { NewVote } from '../../database';
+import { ValidationError, NotFoundError, BusinessLogicError, ForbiddenError } from '../../errors';
 
 export interface SubmitVotesRequest {
   // For normal mode (backward compatibility)
@@ -32,18 +33,18 @@ export async function submitVotes(
     .executeTakeFirst();
 
   if (!currentCycle) {
-    throw new Error('No active voting cycle found');
+    throw new NotFoundError('No active voting cycle found');
   }
 
   // Check if we're in the voting phase
   if (currentCycle.status !== 'voting') {
-    throw new Error('Voting is only allowed during the voting phase');
+    throw new ForbiddenError('Voting is only allowed during the voting phase');
   }
 
   // Check if voting deadline has passed
   const now = new Date();
   if (currentCycle.voting_deadline <= now) {
-    throw new Error('Voting deadline has passed');
+    throw new ForbiddenError('Voting deadline has passed');
   }
 
   // Handle different voting modes
@@ -60,7 +61,7 @@ async function handleNormalModeVoting(
   bookSuggestionIds?: string[]
 ): Promise<VoteResponse[]> {
   if (!bookSuggestionIds) {
-    throw new Error('Normal mode requires bookSuggestionIds');
+    throw new ValidationError('Normal mode requires bookSuggestionIds');
   }
 
   // Validate that all book suggestion IDs exist and belong to the current cycle
@@ -112,7 +113,7 @@ async function handleRankingModeVoting(
   orderedBookIds?: string[]
 ): Promise<VoteResponse[]> {
   if (!orderedBookIds) {
-    throw new Error('Ranking mode requires orderedBookIds');
+    throw new ValidationError('Ranking mode requires orderedBookIds');
   }
 
   // Get all book suggestions for this cycle, separating user's own from others
@@ -129,12 +130,12 @@ async function handleRankingModeVoting(
   const userOwnBookIds = userOwnBooks.map(book => book.id);
   const hasOwnBook = orderedBookIds.some(bookId => userOwnBookIds.includes(bookId));
   if (hasOwnBook) {
-    throw new Error('Cannot include your own book suggestion in ranking');
+    throw new ValidationError('Cannot include your own book suggestion in ranking');
   }
 
   // Validate that all books except user's own are ranked
   if (orderedBookIds.length !== otherBooks.length) {
-    throw new Error(`In ranking mode, all books except your own must be ranked. Expected ${otherBooks.length} books, got ${orderedBookIds.length}`);
+    throw new ValidationError(`In ranking mode, all books except your own must be ranked. Expected ${otherBooks.length} books, got ${orderedBookIds.length}`);
   }
 
   // Validate that all provided IDs exist and belong to the current cycle (and are not user's own)
@@ -180,7 +181,7 @@ async function validateBookSuggestionIds(bookSuggestionIds: string[], cycleId: s
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   for (const id of bookSuggestionIds) {
     if (!uuidRegex.test(id)) {
-      throw new Error('One or more book suggestions are invalid or not part of the current voting cycle');
+      throw new ValidationError('One or more book suggestions are invalid or not part of the current voting cycle');
     }
   }
 
@@ -192,7 +193,7 @@ async function validateBookSuggestionIds(bookSuggestionIds: string[], cycleId: s
     .execute();
 
   if (validSuggestions.length !== bookSuggestionIds.length) {
-    throw new Error('One or more book suggestions are invalid or not part of the current voting cycle');
+    throw new ValidationError('One or more book suggestions are invalid or not part of the current voting cycle');
   }
 }
 
@@ -201,7 +202,7 @@ async function validateBookSuggestionIdsForRanking(bookSuggestionIds: string[], 
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   for (const id of bookSuggestionIds) {
     if (!uuidRegex.test(id)) {
-      throw new Error('One or more book suggestions are invalid or not part of the current voting cycle');
+      throw new ValidationError('One or more book suggestions are invalid or not part of the current voting cycle');
     }
   }
 
@@ -213,13 +214,13 @@ async function validateBookSuggestionIdsForRanking(bookSuggestionIds: string[], 
     .execute();
 
   if (validSuggestions.length !== bookSuggestionIds.length) {
-    throw new Error('One or more book suggestions are invalid or not part of the current voting cycle');
+    throw new ValidationError('One or more book suggestions are invalid or not part of the current voting cycle');
   }
 
   // Double-check that none of the books belong to the user
   const userOwnBooks = validSuggestions.filter(s => s.user_id === userId);
   if (userOwnBooks.length > 0) {
-    throw new Error('Cannot include your own book suggestion in ranking');
+    throw new ValidationError('Cannot include your own book suggestion in ranking');
   }
 }
 
@@ -253,7 +254,7 @@ export async function getVoteResults(cycleId: string): Promise<VoteResultRespons
   // First validate UUID format
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuidRegex.test(cycleId)) {
-    throw new Error('Voting cycle not found');
+    throw new NotFoundError('Voting cycle not found');
   }
 
   // Check if the cycle is completed
@@ -264,11 +265,11 @@ export async function getVoteResults(cycleId: string): Promise<VoteResultRespons
     .executeTakeFirst();
 
   if (!cycle) {
-    throw new Error('Voting cycle not found');
+    throw new NotFoundError('Voting cycle not found');
   }
 
   if (cycle.status !== 'completed') {
-    throw new Error('Vote results are only available for completed cycles');
+    throw new ForbiddenError('Vote results are only available for completed cycles');
   }
 
   const results = await db

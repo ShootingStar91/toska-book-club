@@ -5,7 +5,16 @@ import jwt from 'jsonwebtoken';
 import { bookSuggestionsRoute } from './route';
 import { createTestUser } from '../../test-setup';
 import { testDb } from '../../test-database';
+import { errorHandler } from '../../middleware/logging';
 import bcrypt from 'bcrypt';
+
+// Helper function to create app with error handling
+function createTestApp() {
+  const app = fastify();
+  app.setErrorHandler(errorHandler);
+  app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+  return app;
+}
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
 
@@ -52,8 +61,7 @@ describe('Book Suggestions Routes', () => {
       const { token } = await createUserAndToken();
       await createVotingCycle('suggesting');
       
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -88,8 +96,7 @@ describe('Book Suggestions Routes', () => {
       const { token } = await createUserAndToken();
       await createVotingCycle('suggesting');
       
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -114,8 +121,7 @@ describe('Book Suggestions Routes', () => {
     });
 
     it('should return 401 without token', async () => {
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -135,8 +141,7 @@ describe('Book Suggestions Routes', () => {
       const { token } = await createUserAndToken();
       await createVotingCycle('suggesting');
       
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -156,8 +161,7 @@ describe('Book Suggestions Routes', () => {
       const { token } = await createUserAndToken();
       await createVotingCycle('suggesting');
       
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -176,8 +180,7 @@ describe('Book Suggestions Routes', () => {
     it('should return 404 when no active voting cycle exists', async () => {
       const { token } = await createUserAndToken();
       
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -198,8 +201,7 @@ describe('Book Suggestions Routes', () => {
       const { token } = await createUserAndToken();
       await createVotingCycle('voting');
       
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -232,8 +234,7 @@ describe('Book Suggestions Routes', () => {
         })
         .execute();
       
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -265,8 +266,7 @@ describe('Book Suggestions Routes', () => {
         })
         .execute();
       
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -300,8 +300,7 @@ describe('Book Suggestions Routes', () => {
         })
         .execute();
       
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -322,8 +321,7 @@ describe('Book Suggestions Routes', () => {
     it('should return 401 without token', async () => {
       const cycle = await createVotingCycle('suggesting');
       
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -352,8 +350,7 @@ describe('Book Suggestions Routes', () => {
         })
         .execute();
       
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -374,8 +371,7 @@ describe('Book Suggestions Routes', () => {
       const { token } = await createUserAndToken();
       const cycle = await createVotingCycle('suggesting');
       
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -391,8 +387,7 @@ describe('Book Suggestions Routes', () => {
     it('should return 401 without token', async () => {
       const cycle = await createVotingCycle('suggesting');
       
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -423,8 +418,7 @@ describe('Book Suggestions Routes', () => {
         .returningAll()
         .executeTakeFirstOrThrow();
       
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -451,8 +445,7 @@ describe('Book Suggestions Routes', () => {
       const { token } = await createUserAndToken();
       await createVotingCycle('suggesting');
       
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -497,8 +490,7 @@ describe('Book Suggestions Routes', () => {
         .returningAll()
         .executeTakeFirstOrThrow();
       
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -530,8 +522,7 @@ describe('Book Suggestions Routes', () => {
         .returningAll()
         .executeTakeFirstOrThrow();
       
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -548,8 +539,7 @@ describe('Book Suggestions Routes', () => {
     });
 
     it('should return 401 without token', async () => {
-      const app = fastify();
-      app.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)

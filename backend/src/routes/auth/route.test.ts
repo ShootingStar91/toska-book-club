@@ -3,7 +3,16 @@ import fastify from 'fastify';
 import request from 'supertest';
 import { authRoute } from './route';
 import { createTestUser } from '../../test-setup';
+import { errorHandler } from '../../middleware/logging';
 import bcrypt from 'bcrypt';
+
+// Helper function to create app with error handling
+function createTestApp() {
+  const app = fastify();
+  app.setErrorHandler(errorHandler);
+  app.register(authRoute);
+  return app;
+}
 
 describe('Auth Routes', () => {
   describe('POST /login', () => {
@@ -16,8 +25,7 @@ describe('Auth Routes', () => {
         is_admin: false,
       });
 
-      const app = fastify();
-      app.register(authRoute);
+      const app = createTestApp();
       
       await app.ready();
       
@@ -43,8 +51,7 @@ describe('Auth Routes', () => {
     });
 
     it('should return 401 for invalid credentials', async () => {
-      const app = fastify();
-      app.register(authRoute);
+      const app = createTestApp();
       
       await app.ready();
       
@@ -62,8 +69,7 @@ describe('Auth Routes', () => {
     });
 
     it('should return 400 for missing username', async () => {
-      const app = fastify();
-      app.register(authRoute);
+      const app = createTestApp();
       
       await app.ready();
       
@@ -80,8 +86,7 @@ describe('Auth Routes', () => {
     });
 
     it('should return 400 for missing password', async () => {
-      const app = fastify();
-      app.register(authRoute);
+      const app = createTestApp();
       
       await app.ready();
       
@@ -98,8 +103,7 @@ describe('Auth Routes', () => {
     });
 
     it('should return 400 for empty request body', async () => {
-      const app = fastify();
-      app.register(authRoute);
+      const app = createTestApp();
       
       await app.ready();
       

@@ -1,5 +1,6 @@
 import { db } from '../../database';
 import { NewBookSuggestion } from '../../database';
+import { ValidationError, NotFoundError, BusinessLogicError, ForbiddenError, ConflictError } from '../../errors';
 
 export interface CreateBookSuggestionRequest {
   title: string;
@@ -41,7 +42,7 @@ export async function createBookSuggestion(
 
   // Validate required fields
   if (!title || !author) {
-    throw new Error('Title and author are required');
+    throw new ValidationError('Title and author are required');
   }
 
   // Get current active voting cycle
@@ -53,18 +54,18 @@ export async function createBookSuggestion(
     .executeTakeFirst();
 
   if (!currentCycle) {
-    throw new Error('No active voting cycle found');
+    throw new NotFoundError('No active voting cycle found');
   }
 
   // Check if we're in the suggesting phase
   if (currentCycle.status !== 'suggesting') {
-    throw new Error('Book suggestions are only allowed during the suggesting phase');
+    throw new ForbiddenError('Book suggestions are only allowed during the suggesting phase');
   }
 
   // Check if suggestion deadline has passed
   const now = new Date();
   if (currentCycle.suggestion_deadline <= now) {
-    throw new Error('Suggestion deadline has passed');
+    throw new ForbiddenError('Suggestion deadline has passed');
   }
 
   // Check if user already has a suggestion for this cycle
@@ -76,7 +77,7 @@ export async function createBookSuggestion(
     .executeTakeFirst();
 
   if (existingSuggestion) {
-    throw new Error('You can only suggest one book per voting cycle');
+    throw new ConflictError('You can only suggest one book per voting cycle');
   }
 
   // Create the book suggestion
@@ -171,7 +172,7 @@ export async function updateBookSuggestion(
 
   // Validate that at least one field is being updated
   if (!title && !author && year === undefined && pageCount === undefined && link === undefined && miscInfo === undefined) {
-    throw new Error('At least one field must be provided for update');
+    throw new ValidationError('At least one field must be provided for update');
   }
 
   // Get the existing suggestion to verify ownership and cycle status
@@ -183,7 +184,7 @@ export async function updateBookSuggestion(
     .executeTakeFirst();
 
   if (!existingSuggestion) {
-    throw new Error('Book suggestion not found or you do not have permission to edit it');
+    throw new NotFoundError('Book suggestion not found or you do not have permission to edit it');
   }
 
   // Get the voting cycle to check if we're still in suggestion phase
@@ -194,18 +195,18 @@ export async function updateBookSuggestion(
     .executeTakeFirst();
 
   if (!cycle) {
-    throw new Error('Voting cycle not found');
+    throw new NotFoundError('Voting cycle not found');
   }
 
   // Check if we're still in the suggesting phase
   if (cycle.status !== 'suggesting') {
-    throw new Error('Book suggestions can only be edited during the suggesting phase');
+    throw new ForbiddenError('Book suggestions can only be edited during the suggesting phase');
   }
 
   // Check if suggestion deadline has passed
   const now = new Date();
   if (cycle.suggestion_deadline <= now) {
-    throw new Error('Suggestion deadline has passed');
+    throw new ForbiddenError('Suggestion deadline has passed');
   }
 
   // Validate required fields if they're being updated
@@ -213,7 +214,7 @@ export async function updateBookSuggestion(
   const finalAuthor = author !== undefined ? author : existingSuggestion.author;
   
   if (!finalTitle || !finalAuthor) {
-    throw new Error('Title and author are required');
+    throw new ValidationError('Title and author are required');
   }
 
   // Build update object with only provided fields

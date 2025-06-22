@@ -1,12 +1,14 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
+import { AppError } from '../errors';
 
-export async function customLogger(request: FastifyRequest, reply: FastifyReply) {
-  const startTime = Date.now();
-  
-  // Continue processing the request
-  await reply;
-  
+export async function onRequestLogger(request: FastifyRequest) {
+  // Store start time on request object
+  (request as any).startTime = Date.now();
+}
+
+export async function onResponseLogger(request: FastifyRequest, reply: FastifyReply) {
   // Calculate response time
+  const startTime = (request as any).startTime || Date.now();
   const responseTime = Date.now() - startTime;
   
   // Get the method and URL path (without query parameters)
@@ -24,15 +26,29 @@ export async function customLogger(request: FastifyRequest, reply: FastifyReply)
   console.log(`[${timestamp}] ${method} ${url} ${statusCode} ${responseTime}ms ${authStatus}`);
 }
 
-export async function errorLogger(error: Error, request: FastifyRequest, reply: FastifyReply) {
+export async function errorHandler(error: Error, request: FastifyRequest, reply: FastifyReply) {
   const method = request.method;
   const url = request.url.split('?')[0];
   const authStatus = request.user ? request.user.username : 'unauthenticated';
   const timestamp = new Date().toLocaleString('fi-FI');
   
-  console.error(`[${timestamp}] ERROR: ${method} ${url} ${authStatus}`);
-  console.error(`[${timestamp}] Message: ${error.message}`);
+  // Handle custom application errors
+  if (error instanceof AppError) {
+    console.error(`[${timestamp}] ${error.errorCode}: ${method} ${url} ${authStatus}`);
+    console.error(`[${timestamp}] Message: ${error.message}`);
+    
+    reply.status(error.statusCode).send({
+      error: error.message
+    });
+    return;
+  }
   
-  // Send generic error response
-  reply.status(500).send({ error: 'Internal server error' });
+  // Handle unexpected errors
+  console.error(`[${timestamp}] UNEXPECTED_ERROR: ${method} ${url} ${authStatus}`);
+  console.error(`[${timestamp}] Message: ${error.message}`);
+  console.error(`[${timestamp}] Stack: ${error.stack}`);
+  
+  reply.status(500).send({
+    error: 'Internal server error'
+  });
 }

@@ -3,13 +3,21 @@ import fastify from 'fastify';
 import request from 'supertest';
 import { authRoute } from './route';
 import { createTestUser } from '../../test-setup';
+import { errorHandler } from '../../middleware/logging';
 import bcrypt from 'bcrypt';
+
+// Helper function to create app with error handling
+function createTestApp() {
+  const app = fastify();
+  app.setErrorHandler(errorHandler);
+  app.register(authRoute);
+  return app;
+}
 
 describe('User Registration', () => {
   describe('POST /register', () => {
     it('should return 201 for successful user creation', async () => {
-      const app = fastify();
-      app.register(authRoute);
+      const app = createTestApp();
       
       await app.ready();
       
@@ -32,8 +40,7 @@ describe('User Registration', () => {
     });
 
     it('should return 400 for missing username', async () => {
-      const app = fastify();
-      app.register(authRoute);
+      const app = createTestApp();
       
       await app.ready();
       
@@ -52,8 +59,7 @@ describe('User Registration', () => {
     });
 
     it('should return 400 for missing password', async () => {
-      const app = fastify();
-      app.register(authRoute);
+      const app = createTestApp();
       
       await app.ready();
       
@@ -72,8 +78,7 @@ describe('User Registration', () => {
     });
 
     it('should return 400 for missing email', async () => {
-      const app = fastify();
-      app.register(authRoute);
+      const app = createTestApp();
       
       await app.ready();
       
@@ -92,8 +97,7 @@ describe('User Registration', () => {
     });
 
     it('should return 400 for missing secret', async () => {
-      const app = fastify();
-      app.register(authRoute);
+      const app = createTestApp();
       
       await app.ready();
       
@@ -112,8 +116,7 @@ describe('User Registration', () => {
     });
 
     it('should return 400 for invalid email format', async () => {
-      const app = fastify();
-      app.register(authRoute);
+      const app = createTestApp();
       
       await app.ready();
       
@@ -133,8 +136,7 @@ describe('User Registration', () => {
     });
 
     it('should return 403 for invalid secret', async () => {
-      const app = fastify();
-      app.register(authRoute);
+      const app = createTestApp();
       
       await app.ready();
       
@@ -161,8 +163,7 @@ describe('User Registration', () => {
         password_hash: await bcrypt.hash('somepassword', 10),
       });
 
-      const app = fastify();
-      app.register(authRoute);
+      const app = createTestApp();
       
       await app.ready();
       
@@ -189,8 +190,7 @@ describe('User Registration', () => {
         password_hash: await bcrypt.hash('somepassword', 10),
       });
 
-      const app = fastify();
-      app.register(authRoute);
+      const app = createTestApp();
       
       await app.ready();
       
@@ -210,8 +210,7 @@ describe('User Registration', () => {
     });
 
     it('should return 400 for weak password', async () => {
-      const app = fastify();
-      app.register(authRoute);
+      const app = createTestApp();
       
       await app.ready();
       
@@ -231,8 +230,7 @@ describe('User Registration', () => {
     });
 
     it('should return 400 for empty request body', async () => {
-      const app = fastify();
-      app.register(authRoute);
+      const app = createTestApp();
       
       await app.ready();
       

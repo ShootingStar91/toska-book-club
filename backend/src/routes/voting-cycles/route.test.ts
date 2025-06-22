@@ -4,7 +4,16 @@ import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { votingCyclesRoute } from './route';
 import { createTestUser } from '../../test-setup';
+import { errorHandler } from '../../middleware/logging';
 import bcrypt from 'bcrypt';
+
+// Helper function to create app with error handling
+function createTestApp() {
+  const app = fastify();
+  app.setErrorHandler(errorHandler);
+  app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+  return app;
+}
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
 
@@ -34,8 +43,7 @@ describe('Voting Cycles Routes', () => {
     it('should create voting cycle for admin user', async () => {
       const { token } = await createUserAndToken(true);
       
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -67,8 +75,7 @@ describe('Voting Cycles Routes', () => {
     it('should return 403 for non-admin user', async () => {
       const { token } = await createUserAndToken(false);
       
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -90,8 +97,7 @@ describe('Voting Cycles Routes', () => {
     });
 
     it('should return 401 without token', async () => {
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -110,8 +116,7 @@ describe('Voting Cycles Routes', () => {
     it('should return 400 for missing required fields', async () => {
       const { token } = await createUserAndToken(true);
       
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -131,8 +136,7 @@ describe('Voting Cycles Routes', () => {
     it('should return 400 for past suggestion deadline', async () => {
       const { token } = await createUserAndToken(true);
       
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -156,8 +160,7 @@ describe('Voting Cycles Routes', () => {
     it('should return 409 when trying to create cycle while one is active', async () => {
       const { token } = await createUserAndToken(true);
       
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -192,8 +195,7 @@ describe('Voting Cycles Routes', () => {
     it('should return 400 for voting deadline before suggestion deadline', async () => {
       const { token } = await createUserAndToken(true);
       
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -219,8 +221,7 @@ describe('Voting Cycles Routes', () => {
     it('should return all voting cycles for authenticated user', async () => {
       const { token } = await createUserAndToken(false);
       
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -234,8 +235,7 @@ describe('Voting Cycles Routes', () => {
     });
 
     it('should return 401 without token', async () => {
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -252,8 +252,7 @@ describe('Voting Cycles Routes', () => {
     it('should return 404 when no active cycle exists', async () => {
       const { token } = await createUserAndToken(false);
       
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -267,8 +266,7 @@ describe('Voting Cycles Routes', () => {
     });
 
     it('should return 401 without token', async () => {
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -285,8 +283,7 @@ describe('Voting Cycles Routes', () => {
     it('should update voting cycle deadlines for admin user', async () => {
       const { token } = await createUserAndToken(true);
       
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -330,8 +327,7 @@ describe('Voting Cycles Routes', () => {
     it('should update only suggestion deadline', async () => {
       const { token } = await createUserAndToken(true);
       
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -371,8 +367,7 @@ describe('Voting Cycles Routes', () => {
       const { token: adminToken } = await createUserAndToken(true);
       const { token: userToken } = await createUserAndToken(false);
       
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -405,8 +400,7 @@ describe('Voting Cycles Routes', () => {
     });
 
     it('should return 401 without token', async () => {
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -424,8 +418,7 @@ describe('Voting Cycles Routes', () => {
     it('should return 404 for non-existent cycle', async () => {
       const { token } = await createUserAndToken(true);
       
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -444,8 +437,7 @@ describe('Voting Cycles Routes', () => {
     it('should allow past suggestion deadline', async () => {
       const { token } = await createUserAndToken(true);
       
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -482,8 +474,7 @@ describe('Voting Cycles Routes', () => {
     it('should return 400 for voting deadline before suggestion deadline', async () => {
       const { token } = await createUserAndToken(true);
       
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -520,8 +511,7 @@ describe('Voting Cycles Routes', () => {
     it('should return 400 for invalid date format', async () => {
       const { token } = await createUserAndToken(true);
       
-      const app = fastify();
-      app.register(votingCyclesRoute, { prefix: '/voting-cycles' });
+      const app = createTestApp();
       await app.ready();
 
       const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);

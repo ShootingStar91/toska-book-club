@@ -17,49 +17,15 @@ export async function bookSuggestionsRoute(fastify: FastifyInstance) {
       preHandler: [authenticateToken],
     },
     async (request, reply) => {
-      try {
-        if (!request.user) {
-          return reply.status(401).send({ error: "Authentication required" });
-        }
-
-        const result = await createBookSuggestion(
-          request.user.userId,
-          request.body
-        );
-        return reply.status(201).send(result);
-      } catch (error) {
-        // Log the actual error for debugging
-        const timestamp = new Date().toLocaleString("fi-FI");
-        console.error(
-          `[${timestamp}] POST /book-suggestions error:`,
-          error instanceof Error ? error.message : error
-        );
-
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : "Failed to create book suggestion";
-
-        // Map specific errors to appropriate status codes
-        if (errorMessage.includes("required")) {
-          return reply.status(400).send({ error: errorMessage });
-        }
-        if (errorMessage.includes("No active voting cycle found")) {
-          return reply.status(404).send({ error: errorMessage });
-        }
-        if (
-          errorMessage.includes("only allowed during") ||
-          errorMessage.includes("deadline has passed")
-        ) {
-          return reply.status(403).send({ error: errorMessage });
-        }
-        if (errorMessage.includes("only suggest one book")) {
-          return reply.status(409).send({ error: errorMessage });
-        }
-
-        // Generic server error
-        return reply.status(500).send({ error: "Internal server error" });
+      if (!request.user) {
+        return reply.status(401).send({ error: "Authentication required" });
       }
+
+      const result = await createBookSuggestion(
+        request.user.userId,
+        request.body
+      );
+      return reply.status(201).send(result);
     }
   );
 
@@ -70,15 +36,9 @@ export async function bookSuggestionsRoute(fastify: FastifyInstance) {
       preHandler: [authenticateToken],
     },
     async (request, reply) => {
-      try {
-        const { cycleId } = request.params;
-        const suggestions = await getBookSuggestionsForCycle(cycleId);
-        return reply.status(200).send(suggestions);
-      } catch {
-        return reply
-          .status(500)
-          .send({ error: "Failed to fetch book suggestions" });
-      }
+      const { cycleId } = request.params;
+      const suggestions = await getBookSuggestionsForCycle(cycleId);
+      return reply.status(200).send(suggestions);
     }
   );
 
@@ -89,29 +49,23 @@ export async function bookSuggestionsRoute(fastify: FastifyInstance) {
       preHandler: [authenticateToken],
     },
     async (request, reply) => {
-      try {
-        if (!request.user) {
-          return reply.status(401).send({ error: "Authentication required" });
-        }
-
-        const { cycleId } = request.params;
-        const suggestion = await getUserSuggestionForCycle(
-          request.user.userId,
-          cycleId
-        );
-
-        if (!suggestion) {
-          return reply
-            .status(404)
-            .send({ error: "No suggestion found for this cycle" });
-        }
-
-        return reply.status(200).send(suggestion);
-      } catch {
-        return reply
-          .status(500)
-          .send({ error: "Failed to fetch user suggestion" });
+      if (!request.user) {
+        return reply.status(401).send({ error: "Authentication required" });
       }
+
+      const { cycleId } = request.params;
+      const suggestion = await getUserSuggestionForCycle(
+        request.user.userId,
+        cycleId
+      );
+
+      if (!suggestion) {
+        return reply
+          .status(404)
+          .send({ error: "No suggestion found for this cycle" });
+      }
+
+      return reply.status(200).send(suggestion);
     }
   );
 
@@ -122,54 +76,17 @@ export async function bookSuggestionsRoute(fastify: FastifyInstance) {
       preHandler: [authenticateToken],
     },
     async (request, reply) => {
-      try {
-        if (!request.user) {
-          return reply.status(401).send({ error: "Authentication required" });
-        }
-
-        const { id } = request.params;
-        const result = await updateBookSuggestion(
-          request.user.userId,
-          id,
-          request.body
-        );
-        return reply.status(200).send(result);
-      } catch (error) {
-        // Log the actual error for debugging
-        const timestamp = new Date().toLocaleString("fi-FI");
-        console.error(
-          `[${timestamp}] PUT /book-suggestions/${request.params.id} error:`,
-          error instanceof Error ? error.message : error
-        );
-
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : "Failed to update book suggestion";
-
-        // Map specific errors to appropriate status codes
-        if (errorMessage.includes("At least one field must be provided")) {
-          return reply.status(400).send({ error: errorMessage });
-        }
-        if (errorMessage.includes("Title and author are required")) {
-          return reply.status(400).send({ error: errorMessage });
-        }
-        if (errorMessage.includes("not found") || errorMessage.includes("do not have permission")) {
-          return reply.status(404).send({ error: errorMessage });
-        }
-        if (errorMessage.includes("Voting cycle not found")) {
-          return reply.status(404).send({ error: errorMessage });
-        }
-        if (
-          errorMessage.includes("only be edited during") ||
-          errorMessage.includes("deadline has passed")
-        ) {
-          return reply.status(403).send({ error: errorMessage });
-        }
-
-        // Generic server error
-        return reply.status(500).send({ error: "Internal server error" });
+      if (!request.user) {
+        return reply.status(401).send({ error: "Authentication required" });
       }
+
+      const { id } = request.params;
+      const result = await updateBookSuggestion(
+        request.user.userId,
+        id,
+        request.body
+      );
+      return reply.status(200).send(result);
     }
   );
 }

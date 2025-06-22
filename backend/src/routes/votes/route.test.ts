@@ -5,7 +5,16 @@ import jwt from 'jsonwebtoken';
 import { votesRoute } from './route';
 import { createTestUser } from '../../test-setup';
 import { testDb } from '../../test-database';
+import { errorHandler } from '../../middleware/logging';
 import bcrypt from 'bcrypt';
+
+// Helper function to create app with error handling
+function createTestApp() {
+  const app = fastify();
+  app.setErrorHandler(errorHandler);
+  app.register(votesRoute, { prefix: '/votes' });
+  return app;
+}
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
 
@@ -72,8 +81,7 @@ describe('Votes Routes', () => {
       const suggestion1 = await createBookSuggestion(user.id, cycle.id, 'Book 1');
       const suggestion2 = await createBookSuggestion(user2.id, cycle.id, 'Book 2');
       
-      const app = fastify();
-      app.register(votesRoute, { prefix: '/votes' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -102,8 +110,7 @@ describe('Votes Routes', () => {
       const cycle = await createVotingCycle('voting');
       await createBookSuggestion(user.id, cycle.id);
       
-      const app = fastify();
-      app.register(votesRoute, { prefix: '/votes' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -146,8 +153,7 @@ describe('Votes Routes', () => {
         ])
         .execute();
       
-      const app = fastify();
-      app.register(votesRoute, { prefix: '/votes' });
+      const app = createTestApp();
       await app.ready();
 
       // Submit new votes (only suggestion2 and suggestion3)
@@ -179,8 +185,7 @@ describe('Votes Routes', () => {
     });
 
     it('should return 401 without token', async () => {
-      const app = fastify();
-      app.register(votesRoute, { prefix: '/votes' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -198,8 +203,7 @@ describe('Votes Routes', () => {
     it('should return 404 when no active voting cycle exists', async () => {
       const { token } = await createUserAndToken();
       
-      const app = fastify();
-      app.register(votesRoute, { prefix: '/votes' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -220,8 +224,7 @@ describe('Votes Routes', () => {
       const cycle = await createVotingCycle('suggesting');
       const suggestion = await createBookSuggestion(user.id, cycle.id);
       
-      const app = fastify();
-      app.register(votesRoute, { prefix: '/votes' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -256,8 +259,7 @@ describe('Votes Routes', () => {
       
       const suggestion = await createBookSuggestion(user.id, cycle.id);
       
-      const app = fastify();
-      app.register(votesRoute, { prefix: '/votes' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -277,8 +279,7 @@ describe('Votes Routes', () => {
       const { token } = await createUserAndToken();
       await createVotingCycle('voting');
       
-      const app = fastify();
-      app.register(votesRoute, { prefix: '/votes' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -331,8 +332,7 @@ describe('Votes Routes', () => {
         .where('id', '=', cycle2.id)
         .execute();
       
-      const app = fastify();
-      app.register(votesRoute, { prefix: '/votes' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -367,8 +367,7 @@ describe('Votes Routes', () => {
         const suggestion2 = await createBookSuggestion(user2.id, cycle.id, 'Book 2');
         const suggestion3 = await createBookSuggestion(user3.id, cycle.id, 'Book 3');
         
-        const app = fastify();
-        app.register(votesRoute, { prefix: '/votes' });
+        const app = createTestApp();
         await app.ready();
 
         const response = await request(app.server)
@@ -423,8 +422,7 @@ describe('Votes Routes', () => {
         const suggestion2 = await createBookSuggestion(user2.id, cycle.id, 'Book 2');
         await createBookSuggestion(user3.id, cycle.id, 'Book 3');
         
-        const app = fastify();
-        app.register(votesRoute, { prefix: '/votes' });
+        const app = createTestApp();
         await app.ready();
 
         const response = await request(app.server)
@@ -452,8 +450,7 @@ describe('Votes Routes', () => {
         const suggestion1 = await createBookSuggestion(user.id, cycle.id, 'Book 1'); // User's own book
         const suggestion2 = await createBookSuggestion(user2.id, cycle.id, 'Book 2');
         
-        const app = fastify();
-        app.register(votesRoute, { prefix: '/votes' });
+        const app = createTestApp();
         await app.ready();
 
         const response = await request(app.server)
@@ -474,8 +471,7 @@ describe('Votes Routes', () => {
         const cycle = await createVotingCycle('voting', 'ranking');
         const suggestion = await createBookSuggestion(user.id, cycle.id);
         
-        const app = fastify();
-        app.register(votesRoute, { prefix: '/votes' });
+        const app = createTestApp();
         await app.ready();
 
         const response = await request(app.server)
@@ -514,8 +510,7 @@ describe('Votes Routes', () => {
         ])
         .execute();
       
-      const app = fastify();
-      app.register(votesRoute, { prefix: '/votes' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -537,8 +532,7 @@ describe('Votes Routes', () => {
       const { token } = await createUserAndToken();
       const cycle = await createVotingCycle('voting');
       
-      const app = fastify();
-      app.register(votesRoute, { prefix: '/votes' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -555,8 +549,7 @@ describe('Votes Routes', () => {
     it('should return 401 without token', async () => {
       const cycle = await createVotingCycle('voting');
       
-      const app = fastify();
-      app.register(votesRoute, { prefix: '/votes' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -592,8 +585,7 @@ describe('Votes Routes', () => {
         ])
         .execute();
       
-      const app = fastify();
-      app.register(votesRoute, { prefix: '/votes' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -625,8 +617,7 @@ describe('Votes Routes', () => {
       const { token } = await createUserAndToken();
       const cycle = await createVotingCycle('voting');
       
-      const app = fastify();
-      app.register(votesRoute, { prefix: '/votes' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -642,8 +633,7 @@ describe('Votes Routes', () => {
     it('should return 404 for non-existent cycle', async () => {
       const { token } = await createUserAndToken();
       
-      const app = fastify();
-      app.register(votesRoute, { prefix: '/votes' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -659,8 +649,7 @@ describe('Votes Routes', () => {
     it('should return 401 without token', async () => {
       const cycle = await createVotingCycle('completed');
       
-      const app = fastify();
-      app.register(votesRoute, { prefix: '/votes' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)
@@ -708,8 +697,7 @@ describe('Votes Routes', () => {
         ])
         .execute();
       
-      const app = fastify();
-      app.register(votesRoute, { prefix: '/votes' });
+      const app = createTestApp();
       await app.ready();
 
       const response = await request(app.server)

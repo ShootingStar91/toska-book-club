@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { db } from '../../database';
+import { ValidationError, UnauthorizedError, ConflictError, ForbiddenError } from '../../errors';
 
 export interface LoginRequest {
   username: string;
@@ -41,14 +42,14 @@ export async function authenticateUser(username: string, password: string): Prom
     .executeTakeFirst();
 
   if (!user) {
-    throw new Error('Invalid credentials');
+    throw new UnauthorizedError('Invalid credentials');
   }
 
   // Verify password
   const isValidPassword = await bcrypt.compare(password, user.password_hash);
   
   if (!isValidPassword) {
-    throw new Error('Invalid credentials');
+    throw new UnauthorizedError('Invalid credentials');
   }
 
   // Generate JWT token
@@ -83,22 +84,22 @@ export async function registerUser(userData: RegisterRequest): Promise<RegisterR
 
   // Validate required fields
   if (!username || !password || !email || !secret) {
-    throw new Error('Username, password, email, and secret are required');
+    throw new ValidationError('Username, password, email, and secret are required');
   }
 
   // Validate secret
   if (secret !== REGISTRATION_SECRET) {
-    throw new Error('Invalid registration secret');
+    throw new ForbiddenError('Invalid registration secret');
   }
 
   // Validate email format
   if (!isValidEmail(email)) {
-    throw new Error('Invalid email format');
+    throw new ValidationError('Invalid email format');
   }
 
   // Validate password strength
   if (password.length < 6) {
-    throw new Error('Password must be at least 6 characters long');
+    throw new ValidationError('Password must be at least 6 characters long');
   }
 
 
@@ -110,7 +111,7 @@ export async function registerUser(userData: RegisterRequest): Promise<RegisterR
     .executeTakeFirst();
 
   if (existingUserByUsername) {
-    throw new Error('Username already exists');
+    throw new ConflictError('Username already exists');
   }
 
   // Check if email already exists
@@ -121,7 +122,7 @@ export async function registerUser(userData: RegisterRequest): Promise<RegisterR
     .executeTakeFirst();
 
   if (existingUserByEmail) {
-    throw new Error('Email already exists');
+    throw new ConflictError('Email already exists');
   }
 
   // Hash password
