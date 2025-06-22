@@ -2,28 +2,19 @@
 
 A _vibe-coded_ book club app for small book clubs.
 
-The app has three phases of a **voting cycle**:
+- The app has three phases of a **voting cycle**:
+  - Suggestions: All users can submit one book suggestion
+  - Voting: All members give votes
+  - Results: Results are shown.
+- The cycles are automatically changed based on deadlines for each phase set by admin. When results are shown, a voting cycle is completed. Admin can then start a new one. While a cycle is ongoing, admin can edit the deadlines.
+- When a user first enters the page, they need to either login, or register.
+  - Registering requires a secret value (`REGISTRATION_SECRET` env), so only book club members can join.
+- The voting can either be normal or ranking.
+  - Normal means each user can give one vote to as many books as they like, 1 vote equaling 1 point. User cannot vote for their own book.
+  - Ranking means that user must drag the suggestions in the order they desire. Top suggestion gets N points where N is the amount of books below it in the order.
+- If books are tied in the results phase, the program will decide the winner randomly.
 
-- Suggestions: All users can submit one book suggestion
-- Voting: All members give votes
-- Results: Results are shown.
-
-The cycles are automatically changed based on deadlines for each phase set by admin.
-
-When results are shown, a voting cycle is completed. Admin can then start a new one. While a cycle is ongoing, admin can edit the deadlines.
-
-When a user first enters the page, they need to either login, or register. Registering requires a secret value, so only book club members can join.
-
-The voting can either be normal or ranking.
-
-- Normal means each user can give one vote to as many books as they like, 1 vote equaling 1 point. User cannot vote for their own book.
-- Ranking means that user must drag the suggestions in the order they desire. Top suggestion gets N points where N is the amount of books below it in the order.
-
-If books are tied in the results phase, the program will decide the winner randomly.
-
-**Built using:** React, Typescript, TailwindCSS, Tanstack-Query, Kysely, PostgreSQL, Eslint, Docker, Vite.
-
-Vibe-coded with Claude Code.
+**Built using:** React, Typescript, TailwindCSS, Tanstack-Query, Kysely, PostgreSQL, Eslint, Docker, Vite, Claude Code
 
 <img src="docs/results.png" alt="Results image" width="500"/>
 
@@ -65,6 +56,15 @@ See full list: [docs/feats.md](docs/feats.md)
 - See [test data description](docs/test-users.md)
 - Test the three phases by logging in with admin-user (`admin - admin123`) and adjusting the deadlines
 - After re-initializing test data, logout and re-login because your user doesn't exist anymore
+
+### Deploying
+
+- The production-versions Dockerfiles are `frontend/Dockerfile` and `backend/Dockerfile`.
+- Also, those need the envs for connecting to a Postgres-database.
+- Backend envs:
+  - `DATABASE_URL` - connection url to the DB
+  - `JWT_SECRET`
+  - `REGISTRATION_SECRET` - make this some easy-to-type word, and give it to the book club
 
 ---
 
