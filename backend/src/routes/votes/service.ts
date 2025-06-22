@@ -1,6 +1,6 @@
-import { db } from '../../database';
-import { NewVote } from '../../database';
-import { ValidationError, NotFoundError, BusinessLogicError, ForbiddenError } from '../../errors';
+import { db } from "../../database";
+import { NewVote } from "../../database";
+import { ValidationError, NotFoundError, ForbiddenError } from "../../errors";
 
 export interface SubmitVotesRequest {
   // For normal mode (backward compatibility)
@@ -26,32 +26,40 @@ export async function submitVotes(
 
   // Get current active voting cycle
   const currentCycle = await db
-    .selectFrom('voting_cycles')
-    .select(['id', 'status', 'voting_deadline', 'voting_mode'])
-    .where('status', 'in', ['suggesting', 'voting'])
-    .orderBy('created_at', 'desc')
+    .selectFrom("voting_cycles")
+    .select(["id", "status", "voting_deadline", "voting_mode"])
+    .where("status", "in", ["suggesting", "voting"])
+    .orderBy("created_at", "desc")
     .executeTakeFirst();
 
   if (!currentCycle) {
-    throw new NotFoundError('No active voting cycle found');
+    throw new NotFoundError("No active voting cycle found");
   }
 
   // Check if we're in the voting phase
-  if (currentCycle.status !== 'voting') {
-    throw new ForbiddenError('Voting is only allowed during the voting phase');
+  if (currentCycle.status !== "voting") {
+    throw new ForbiddenError("Voting is only allowed during the voting phase");
   }
 
   // Check if voting deadline has passed
   const now = new Date();
   if (currentCycle.voting_deadline <= now) {
-    throw new ForbiddenError('Voting deadline has passed');
+    throw new ForbiddenError("Voting deadline has passed");
   }
 
   // Handle different voting modes
-  if (currentCycle.voting_mode === 'ranking') {
-    return await handleRankingModeVoting(userId, currentCycle.id, orderedBookIds);
+  if (currentCycle.voting_mode === "ranking") {
+    return await handleRankingModeVoting(
+      userId,
+      currentCycle.id,
+      orderedBookIds
+    );
   } else {
-    return await handleNormalModeVoting(userId, currentCycle.id, bookSuggestionIds);
+    return await handleNormalModeVoting(
+      userId,
+      currentCycle.id,
+      bookSuggestionIds
+    );
   }
 }
 
@@ -61,7 +69,7 @@ async function handleNormalModeVoting(
   bookSuggestionIds?: string[]
 ): Promise<VoteResponse[]> {
   if (!bookSuggestionIds) {
-    throw new ValidationError('Normal mode requires bookSuggestionIds');
+    throw new ValidationError("Normal mode requires bookSuggestionIds");
   }
 
   // Validate that all book suggestion IDs exist and belong to the current cycle
@@ -73,9 +81,9 @@ async function handleNormalModeVoting(
   return await db.transaction().execute(async (trx) => {
     // Remove all existing votes for this user and cycle
     await trx
-      .deleteFrom('votes')
-      .where('user_id', '=', userId)
-      .where('voting_cycle_id', '=', cycleId)
+      .deleteFrom("votes")
+      .where("user_id", "=", userId)
+      .where("voting_cycle_id", "=", cycleId)
       .execute();
 
     // Create new votes if any book suggestions were provided
@@ -83,7 +91,7 @@ async function handleNormalModeVoting(
       return []; // User chose to vote for no books
     }
 
-    const newVotes: NewVote[] = bookSuggestionIds.map(bookSuggestionId => ({
+    const newVotes: NewVote[] = bookSuggestionIds.map((bookSuggestionId) => ({
       user_id: userId,
       voting_cycle_id: cycleId,
       book_suggestion_id: bookSuggestionId,
@@ -91,12 +99,12 @@ async function handleNormalModeVoting(
     }));
 
     const createdVotes = await trx
-      .insertInto('votes')
+      .insertInto("votes")
       .values(newVotes)
       .returningAll()
       .execute();
 
-    return createdVotes.map(vote => ({
+    return createdVotes.map((vote) => ({
       id: vote.id,
       userId: vote.user_id,
       votingCycleId: vote.voting_cycle_id,
@@ -113,29 +121,35 @@ async function handleRankingModeVoting(
   orderedBookIds?: string[]
 ): Promise<VoteResponse[]> {
   if (!orderedBookIds) {
-    throw new ValidationError('Ranking mode requires orderedBookIds');
+    throw new ValidationError("Ranking mode requires orderedBookIds");
   }
 
   // Get all book suggestions for this cycle, separating user's own from others
   const allSuggestions = await db
-    .selectFrom('book_suggestions')
-    .select(['id', 'user_id'])
-    .where('voting_cycle_id', '=', cycleId)
+    .selectFrom("book_suggestions")
+    .select(["id", "user_id"])
+    .where("voting_cycle_id", "=", cycleId)
     .execute();
 
-  const userOwnBooks = allSuggestions.filter(s => s.user_id === userId);
-  const otherBooks = allSuggestions.filter(s => s.user_id !== userId);
+  const userOwnBooks = allSuggestions.filter((s) => s.user_id === userId);
+  const otherBooks = allSuggestions.filter((s) => s.user_id !== userId);
 
   // Validate that user hasn't included their own book in the ranking
-  const userOwnBookIds = userOwnBooks.map(book => book.id);
-  const hasOwnBook = orderedBookIds.some(bookId => userOwnBookIds.includes(bookId));
+  const userOwnBookIds = userOwnBooks.map((book) => book.id);
+  const hasOwnBook = orderedBookIds.some((bookId) =>
+    userOwnBookIds.includes(bookId)
+  );
   if (hasOwnBook) {
-    throw new ValidationError('Cannot include your own book suggestion in ranking');
+    throw new ValidationError(
+      "Cannot include your own book suggestion in ranking"
+    );
   }
 
   // Validate that all books except user's own are ranked
   if (orderedBookIds.length !== otherBooks.length) {
-    throw new ValidationError(`In ranking mode, all books except your own must be ranked. Expected ${otherBooks.length} books, got ${orderedBookIds.length}`);
+    throw new ValidationError(
+      `In ranking mode, all books except your own must be ranked. Expected ${otherBooks.length} books, got ${orderedBookIds.length}`
+    );
   }
 
   // Validate that all provided IDs exist and belong to the current cycle (and are not user's own)
@@ -145,27 +159,29 @@ async function handleRankingModeVoting(
   return await db.transaction().execute(async (trx) => {
     // Remove all existing votes for this user and cycle
     await trx
-      .deleteFrom('votes')
-      .where('user_id', '=', userId)
-      .where('voting_cycle_id', '=', cycleId)
+      .deleteFrom("votes")
+      .where("user_id", "=", userId)
+      .where("voting_cycle_id", "=", cycleId)
       .execute();
 
     // Create ranking votes: first book gets N-1 points, last gets 0 points
     const totalBooks = orderedBookIds.length;
-    const newVotes: NewVote[] = orderedBookIds.map((bookSuggestionId, index) => ({
-      user_id: userId,
-      voting_cycle_id: cycleId,
-      book_suggestion_id: bookSuggestionId,
-      points: totalBooks - 1 - index, // First book = N-1 points, last = 0 points
-    }));
+    const newVotes: NewVote[] = orderedBookIds.map(
+      (bookSuggestionId, index) => ({
+        user_id: userId,
+        voting_cycle_id: cycleId,
+        book_suggestion_id: bookSuggestionId,
+        points: totalBooks - 1 - index, // First book = N-1 points, last = 0 points
+      })
+    );
 
     const createdVotes = await trx
-      .insertInto('votes')
+      .insertInto("votes")
       .values(newVotes)
       .returningAll()
       .execute();
 
-    return createdVotes.map(vote => ({
+    return createdVotes.map((vote) => ({
       id: vote.id,
       userId: vote.user_id,
       votingCycleId: vote.voting_cycle_id,
@@ -176,64 +192,86 @@ async function handleRankingModeVoting(
   });
 }
 
-async function validateBookSuggestionIds(bookSuggestionIds: string[], cycleId: string): Promise<void> {
+async function validateBookSuggestionIds(
+  bookSuggestionIds: string[],
+  cycleId: string
+): Promise<void> {
   // First validate UUID format
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   for (const id of bookSuggestionIds) {
     if (!uuidRegex.test(id)) {
-      throw new ValidationError('One or more book suggestions are invalid or not part of the current voting cycle');
+      throw new ValidationError(
+        "One or more book suggestions are invalid or not part of the current voting cycle"
+      );
     }
   }
 
   const validSuggestions = await db
-    .selectFrom('book_suggestions')
-    .select('id')
-    .where('id', 'in', bookSuggestionIds)
-    .where('voting_cycle_id', '=', cycleId)
+    .selectFrom("book_suggestions")
+    .select("id")
+    .where("id", "in", bookSuggestionIds)
+    .where("voting_cycle_id", "=", cycleId)
     .execute();
 
   if (validSuggestions.length !== bookSuggestionIds.length) {
-    throw new ValidationError('One or more book suggestions are invalid or not part of the current voting cycle');
+    throw new ValidationError(
+      "One or more book suggestions are invalid or not part of the current voting cycle"
+    );
   }
 }
 
-async function validateBookSuggestionIdsForRanking(bookSuggestionIds: string[], cycleId: string, userId: string): Promise<void> {
+async function validateBookSuggestionIdsForRanking(
+  bookSuggestionIds: string[],
+  cycleId: string,
+  userId: string
+): Promise<void> {
   // First validate UUID format
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   for (const id of bookSuggestionIds) {
     if (!uuidRegex.test(id)) {
-      throw new ValidationError('One or more book suggestions are invalid or not part of the current voting cycle');
+      throw new ValidationError(
+        "One or more book suggestions are invalid or not part of the current voting cycle"
+      );
     }
   }
 
   const validSuggestions = await db
-    .selectFrom('book_suggestions')
-    .select(['id', 'user_id'])
-    .where('id', 'in', bookSuggestionIds)
-    .where('voting_cycle_id', '=', cycleId)
+    .selectFrom("book_suggestions")
+    .select(["id", "user_id"])
+    .where("id", "in", bookSuggestionIds)
+    .where("voting_cycle_id", "=", cycleId)
     .execute();
 
   if (validSuggestions.length !== bookSuggestionIds.length) {
-    throw new ValidationError('One or more book suggestions are invalid or not part of the current voting cycle');
+    throw new ValidationError(
+      "One or more book suggestions are invalid or not part of the current voting cycle"
+    );
   }
 
   // Double-check that none of the books belong to the user
-  const userOwnBooks = validSuggestions.filter(s => s.user_id === userId);
+  const userOwnBooks = validSuggestions.filter((s) => s.user_id === userId);
   if (userOwnBooks.length > 0) {
-    throw new ValidationError('Cannot include your own book suggestion in ranking');
+    throw new ValidationError(
+      "Cannot include your own book suggestion in ranking"
+    );
   }
 }
 
-export async function getUserVotesForCycle(userId: string, cycleId: string): Promise<VoteResponse[]> {
+export async function getUserVotesForCycle(
+  userId: string,
+  cycleId: string
+): Promise<VoteResponse[]> {
   const votes = await db
-    .selectFrom('votes')
+    .selectFrom("votes")
     .selectAll()
-    .where('user_id', '=', userId)
-    .where('voting_cycle_id', '=', cycleId)
-    .orderBy('created_at', 'asc')
+    .where("user_id", "=", userId)
+    .where("voting_cycle_id", "=", cycleId)
+    .orderBy("created_at", "asc")
     .execute();
 
-  return votes.map(vote => ({
+  return votes.map((vote) => ({
     id: vote.id,
     userId: vote.user_id,
     votingCycleId: vote.voting_cycle_id,
@@ -250,43 +288,56 @@ export interface VoteResultResponse {
   voteCount: number;
 }
 
-export async function getVoteResults(cycleId: string): Promise<VoteResultResponse[]> {
+export async function getVoteResults(
+  cycleId: string
+): Promise<VoteResultResponse[]> {
   // First validate UUID format
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuidRegex.test(cycleId)) {
-    throw new NotFoundError('Voting cycle not found');
+    throw new NotFoundError("Voting cycle not found");
   }
 
   // Check if the cycle is completed
   const cycle = await db
-    .selectFrom('voting_cycles')
-    .select(['status'])
-    .where('id', '=', cycleId)
+    .selectFrom("voting_cycles")
+    .select(["status"])
+    .where("id", "=", cycleId)
     .executeTakeFirst();
 
   if (!cycle) {
-    throw new NotFoundError('Voting cycle not found');
+    throw new NotFoundError("Voting cycle not found");
   }
 
-  if (cycle.status !== 'completed') {
-    throw new ForbiddenError('Vote results are only available for completed cycles');
+  if (cycle.status !== "completed") {
+    throw new ForbiddenError(
+      "Vote results are only available for completed cycles"
+    );
   }
 
   const results = await db
-    .selectFrom('votes')
-    .innerJoin('book_suggestions', 'votes.book_suggestion_id', 'book_suggestions.id')
+    .selectFrom("votes")
+    .innerJoin(
+      "book_suggestions",
+      "votes.book_suggestion_id",
+      "book_suggestions.id"
+    )
     .select([
-      'book_suggestions.id as bookSuggestionId',
-      'book_suggestions.title',
-      'book_suggestions.author',
-      db.fn.sum('votes.points').as('voteCount') // Sum points instead of counting votes
+      "book_suggestions.id as bookSuggestionId",
+      "book_suggestions.title",
+      "book_suggestions.author",
+      db.fn.sum("votes.points").as("voteCount"), // Sum points instead of counting votes
     ])
-    .where('votes.voting_cycle_id', '=', cycleId)
-    .groupBy(['book_suggestions.id', 'book_suggestions.title', 'book_suggestions.author'])
-    .orderBy('voteCount', 'desc')
+    .where("votes.voting_cycle_id", "=", cycleId)
+    .groupBy([
+      "book_suggestions.id",
+      "book_suggestions.title",
+      "book_suggestions.author",
+    ])
+    .orderBy("voteCount", "desc")
     .execute();
 
-  return results.map(result => ({
+  return results.map((result) => ({
     bookSuggestionId: result.bookSuggestionId,
     title: result.title,
     author: result.author,

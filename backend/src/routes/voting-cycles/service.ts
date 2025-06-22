@@ -1,41 +1,52 @@
-import { db } from '../../database';
-import { NewVotingCycle } from '../../database';
-import { ValidationError, ConflictError, NotFoundError, BusinessLogicError } from '../../errors';
+import { db } from "../../database";
+import { NewVotingCycle } from "../../database";
+import {
+  ValidationError,
+  ConflictError,
+  NotFoundError,
+  BusinessLogicError,
+} from "../../errors";
 
 export interface CreateVotingCycleRequest {
   suggestionDeadline: string; // ISO date string
   votingDeadline: string; // ISO date string
-  votingMode: 'normal' | 'ranking';
+  votingMode: "normal" | "ranking";
 }
 
 export interface UpdateVotingCycleRequest {
   suggestionDeadline?: string; // ISO date string
   votingDeadline?: string; // ISO date string
-  votingMode?: 'normal' | 'ranking';
+  votingMode?: "normal" | "ranking";
 }
 
 export interface VotingCycleResponse {
   id: string;
   suggestionDeadline: string;
   votingDeadline: string;
-  status: 'suggesting' | 'voting' | 'completed';
-  votingMode: 'normal' | 'ranking';
+  status: "suggesting" | "voting" | "completed";
+  votingMode: "normal" | "ranking";
   createdAt: string;
   updatedAt: string;
 }
 
-export async function createVotingCycle(data: CreateVotingCycleRequest): Promise<VotingCycleResponse> {
+export async function createVotingCycle(
+  data: CreateVotingCycleRequest
+): Promise<VotingCycleResponse> {
   const { suggestionDeadline, votingDeadline, votingMode } = data;
 
   // Validate required fields
   if (!suggestionDeadline || !votingDeadline || !votingMode) {
-    throw new ValidationError('Suggestion deadline, voting deadline, and voting mode are required');
+    throw new ValidationError(
+      "Suggestion deadline, voting deadline, and voting mode are required"
+    );
   }
 
   // Check if there's already an active voting cycle
   const existingCycle = await getCurrentVotingCycle();
-  if (existingCycle && existingCycle.status !== 'completed') {
-    throw new ConflictError('Cannot create a new voting cycle while one is still active');
+  if (existingCycle && existingCycle.status !== "completed") {
+    throw new ConflictError(
+      "Cannot create a new voting cycle while one is still active"
+    );
   }
 
   // Parse and validate dates
@@ -44,31 +55,33 @@ export async function createVotingCycle(data: CreateVotingCycleRequest): Promise
   const now = new Date();
 
   if (isNaN(suggestionDate.getTime())) {
-    throw new ValidationError('Invalid suggestion deadline format');
+    throw new ValidationError("Invalid suggestion deadline format");
   }
 
   if (isNaN(votingDate.getTime())) {
-    throw new ValidationError('Invalid voting deadline format');
+    throw new ValidationError("Invalid voting deadline format");
   }
 
   if (suggestionDate <= now) {
-    throw new ValidationError('Suggestion deadline must be in the future');
+    throw new ValidationError("Suggestion deadline must be in the future");
   }
 
   if (votingDate <= suggestionDate) {
-    throw new ValidationError('Voting deadline must be after suggestion deadline');
+    throw new ValidationError(
+      "Voting deadline must be after suggestion deadline"
+    );
   }
 
   // Create the voting cycle
   const newCycle: NewVotingCycle = {
     suggestion_deadline: suggestionDate,
     voting_deadline: votingDate,
-    status: 'suggesting',
+    status: "suggesting",
     voting_mode: votingMode,
   };
 
   const createdCycle = await db
-    .insertInto('voting_cycles')
+    .insertInto("voting_cycles")
     .values(newCycle)
     .returningAll()
     .executeTakeFirstOrThrow();
@@ -86,12 +99,12 @@ export async function createVotingCycle(data: CreateVotingCycleRequest): Promise
 
 export async function getAllVotingCycles(): Promise<VotingCycleResponse[]> {
   const cycles = await db
-    .selectFrom('voting_cycles')
+    .selectFrom("voting_cycles")
     .selectAll()
-    .orderBy('created_at', 'desc')
+    .orderBy("created_at", "desc")
     .execute();
 
-  return cycles.map(cycle => ({
+  return cycles.map((cycle) => ({
     id: cycle.id,
     suggestionDeadline: cycle.suggestion_deadline.toISOString(),
     votingDeadline: cycle.voting_deadline.toISOString(),
@@ -105,9 +118,9 @@ export async function getAllVotingCycles(): Promise<VotingCycleResponse[]> {
 export async function getCurrentVotingCycle(): Promise<VotingCycleResponse | null> {
   // Get the most recent cycle (including completed ones)
   const cycle = await db
-    .selectFrom('voting_cycles')
+    .selectFrom("voting_cycles")
     .selectAll()
-    .orderBy('created_at', 'desc')
+    .orderBy("created_at", "desc")
     .executeTakeFirst();
 
   if (!cycle) {
@@ -119,28 +132,28 @@ export async function getCurrentVotingCycle(): Promise<VotingCycleResponse | nul
   const now = new Date();
   const suggestionDeadline = cycle.suggestion_deadline;
   const votingDeadline = cycle.voting_deadline;
-  
-  let currentStatus: 'suggesting' | 'voting' | 'completed' = cycle.status;
-  
+
+  let currentStatus: "suggesting" | "voting" | "completed" = cycle.status;
+
   // Only auto-update status if not already manually completed
-  if (cycle.status !== 'completed') {
+  if (cycle.status !== "completed") {
     if (now > votingDeadline) {
-      currentStatus = 'completed';
+      currentStatus = "completed";
     } else if (now > suggestionDeadline) {
-      currentStatus = 'voting';
+      currentStatus = "voting";
     } else {
-      currentStatus = 'suggesting';
+      currentStatus = "suggesting";
     }
-    
+
     // Update the status in the database if it has changed
     if (currentStatus !== cycle.status) {
       await db
-        .updateTable('voting_cycles')
-        .set({ 
+        .updateTable("voting_cycles")
+        .set({
           status: currentStatus,
-          updated_at: now
+          updated_at: now,
         })
-        .where('id', '=', cycle.id)
+        .where("id", "=", cycle.id)
         .execute();
     }
   }
@@ -156,22 +169,25 @@ export async function getCurrentVotingCycle(): Promise<VotingCycleResponse | nul
   };
 }
 
-export async function updateVotingCycle(cycleId: string, data: UpdateVotingCycleRequest): Promise<VotingCycleResponse> {
+export async function updateVotingCycle(
+  cycleId: string,
+  data: UpdateVotingCycleRequest
+): Promise<VotingCycleResponse> {
   const { suggestionDeadline, votingDeadline, votingMode } = data;
 
   // Get the current cycle to validate it exists and is editable
   const existingCycle = await db
-    .selectFrom('voting_cycles')
+    .selectFrom("voting_cycles")
     .selectAll()
-    .where('id', '=', cycleId)
+    .where("id", "=", cycleId)
     .executeTakeFirst();
 
   if (!existingCycle) {
-    throw new NotFoundError('Voting cycle not found');
+    throw new NotFoundError("Voting cycle not found");
   }
 
-  if (existingCycle.status === 'completed') {
-    throw new BusinessLogicError('Cannot edit a completed voting cycle');
+  if (existingCycle.status === "completed") {
+    throw new BusinessLogicError("Cannot edit a completed voting cycle");
   }
 
   const now = new Date();
@@ -183,7 +199,7 @@ export async function updateVotingCycle(cycleId: string, data: UpdateVotingCycle
   if (suggestionDeadline) {
     const suggestionDate = new Date(suggestionDeadline);
     if (isNaN(suggestionDate.getTime())) {
-      throw new ValidationError('Invalid suggestion deadline format');
+      throw new ValidationError("Invalid suggestion deadline format");
     }
     updateData.suggestion_deadline = suggestionDate;
   }
@@ -192,13 +208,16 @@ export async function updateVotingCycle(cycleId: string, data: UpdateVotingCycle
   if (votingDeadline) {
     const votingDate = new Date(votingDeadline);
     if (isNaN(votingDate.getTime())) {
-      throw new ValidationError('Invalid voting deadline format');
+      throw new ValidationError("Invalid voting deadline format");
     }
-    
+
     // Check if voting deadline is after suggestion deadline
-    const finalSuggestionDeadline = updateData.suggestion_deadline || existingCycle.suggestion_deadline;
+    const finalSuggestionDeadline =
+      updateData.suggestion_deadline || existingCycle.suggestion_deadline;
     if (votingDate <= finalSuggestionDeadline) {
-      throw new ValidationError('Voting deadline must be after suggestion deadline');
+      throw new ValidationError(
+        "Voting deadline must be after suggestion deadline"
+      );
     }
     updateData.voting_deadline = votingDate;
   }
@@ -210,9 +229,9 @@ export async function updateVotingCycle(cycleId: string, data: UpdateVotingCycle
 
   // Update the voting cycle
   const updatedCycle = await db
-    .updateTable('voting_cycles')
+    .updateTable("voting_cycles")
     .set(updateData)
-    .where('id', '=', cycleId)
+    .where("id", "=", cycleId)
     .returningAll()
     .executeTakeFirstOrThrow();
 

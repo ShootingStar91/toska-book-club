@@ -1,6 +1,11 @@
-import { db } from '../../database';
-import { NewBookSuggestion } from '../../database';
-import { ValidationError, NotFoundError, BusinessLogicError, ForbiddenError, ConflictError } from '../../errors';
+import { db } from "../../database";
+import { NewBookSuggestion } from "../../database";
+import {
+  ValidationError,
+  NotFoundError,
+  ForbiddenError,
+  ConflictError,
+} from "../../errors";
 
 export interface CreateBookSuggestionRequest {
   title: string;
@@ -42,42 +47,44 @@ export async function createBookSuggestion(
 
   // Validate required fields
   if (!title || !author) {
-    throw new ValidationError('Title and author are required');
+    throw new ValidationError("Title and author are required");
   }
 
   // Get current active voting cycle
   const currentCycle = await db
-    .selectFrom('voting_cycles')
-    .select(['id', 'status', 'suggestion_deadline'])
-    .where('status', 'in', ['suggesting', 'voting'])
-    .orderBy('created_at', 'desc')
+    .selectFrom("voting_cycles")
+    .select(["id", "status", "suggestion_deadline"])
+    .where("status", "in", ["suggesting", "voting"])
+    .orderBy("created_at", "desc")
     .executeTakeFirst();
 
   if (!currentCycle) {
-    throw new NotFoundError('No active voting cycle found');
+    throw new NotFoundError("No active voting cycle found");
   }
 
   // Check if we're in the suggesting phase
-  if (currentCycle.status !== 'suggesting') {
-    throw new ForbiddenError('Book suggestions are only allowed during the suggesting phase');
+  if (currentCycle.status !== "suggesting") {
+    throw new ForbiddenError(
+      "Book suggestions are only allowed during the suggesting phase"
+    );
   }
 
   // Check if suggestion deadline has passed
   const now = new Date();
   if (currentCycle.suggestion_deadline <= now) {
-    throw new ForbiddenError('Suggestion deadline has passed');
+    throw new ForbiddenError("Suggestion deadline has passed");
   }
 
   // Check if user already has a suggestion for this cycle
   const existingSuggestion = await db
-    .selectFrom('book_suggestions')
-    .select('id')
-    .where('user_id', '=', userId)
-    .where('voting_cycle_id', '=', currentCycle.id)
+    .selectFrom("book_suggestions")
+    .select("id")
+    .where("user_id", "=", userId)
+    .where("voting_cycle_id", "=", currentCycle.id)
     .executeTakeFirst();
 
   if (existingSuggestion) {
-    throw new ConflictError('You can only suggest one book per voting cycle');
+    throw new ConflictError("You can only suggest one book per voting cycle");
   }
 
   // Create the book suggestion
@@ -93,7 +100,7 @@ export async function createBookSuggestion(
   };
 
   const createdSuggestion = await db
-    .insertInto('book_suggestions')
+    .insertInto("book_suggestions")
     .values(newSuggestion)
     .returningAll()
     .executeTakeFirstOrThrow();
@@ -113,15 +120,17 @@ export async function createBookSuggestion(
   };
 }
 
-export async function getBookSuggestionsForCycle(cycleId: string): Promise<BookSuggestionResponse[]> {
+export async function getBookSuggestionsForCycle(
+  cycleId: string
+): Promise<BookSuggestionResponse[]> {
   const suggestions = await db
-    .selectFrom('book_suggestions')
+    .selectFrom("book_suggestions")
     .selectAll()
-    .where('voting_cycle_id', '=', cycleId)
-    .orderBy('created_at', 'asc')
+    .where("voting_cycle_id", "=", cycleId)
+    .orderBy("created_at", "asc")
     .execute();
 
-  return suggestions.map(suggestion => ({
+  return suggestions.map((suggestion) => ({
     id: suggestion.id,
     userId: suggestion.user_id,
     votingCycleId: suggestion.voting_cycle_id,
@@ -136,12 +145,15 @@ export async function getBookSuggestionsForCycle(cycleId: string): Promise<BookS
   }));
 }
 
-export async function getUserSuggestionForCycle(userId: string, cycleId: string): Promise<BookSuggestionResponse | null> {
+export async function getUserSuggestionForCycle(
+  userId: string,
+  cycleId: string
+): Promise<BookSuggestionResponse | null> {
   const suggestion = await db
-    .selectFrom('book_suggestions')
+    .selectFrom("book_suggestions")
     .selectAll()
-    .where('user_id', '=', userId)
-    .where('voting_cycle_id', '=', cycleId)
+    .where("user_id", "=", userId)
+    .where("voting_cycle_id", "=", cycleId)
     .executeTakeFirst();
 
   if (!suggestion) {
@@ -171,50 +183,61 @@ export async function updateBookSuggestion(
   const { title, author, year, pageCount, link, miscInfo } = data;
 
   // Validate that at least one field is being updated
-  if (!title && !author && year === undefined && pageCount === undefined && link === undefined && miscInfo === undefined) {
-    throw new ValidationError('At least one field must be provided for update');
+  if (
+    !title &&
+    !author &&
+    year === undefined &&
+    pageCount === undefined &&
+    link === undefined &&
+    miscInfo === undefined
+  ) {
+    throw new ValidationError("At least one field must be provided for update");
   }
 
   // Get the existing suggestion to verify ownership and cycle status
   const existingSuggestion = await db
-    .selectFrom('book_suggestions')
+    .selectFrom("book_suggestions")
     .selectAll()
-    .where('id', '=', suggestionId)
-    .where('user_id', '=', userId) // Ensure user owns this suggestion
+    .where("id", "=", suggestionId)
+    .where("user_id", "=", userId) // Ensure user owns this suggestion
     .executeTakeFirst();
 
   if (!existingSuggestion) {
-    throw new NotFoundError('Book suggestion not found or you do not have permission to edit it');
+    throw new NotFoundError(
+      "Book suggestion not found or you do not have permission to edit it"
+    );
   }
 
   // Get the voting cycle to check if we're still in suggestion phase
   const cycle = await db
-    .selectFrom('voting_cycles')
-    .select(['status', 'suggestion_deadline'])
-    .where('id', '=', existingSuggestion.voting_cycle_id)
+    .selectFrom("voting_cycles")
+    .select(["status", "suggestion_deadline"])
+    .where("id", "=", existingSuggestion.voting_cycle_id)
     .executeTakeFirst();
 
   if (!cycle) {
-    throw new NotFoundError('Voting cycle not found');
+    throw new NotFoundError("Voting cycle not found");
   }
 
   // Check if we're still in the suggesting phase
-  if (cycle.status !== 'suggesting') {
-    throw new ForbiddenError('Book suggestions can only be edited during the suggesting phase');
+  if (cycle.status !== "suggesting") {
+    throw new ForbiddenError(
+      "Book suggestions can only be edited during the suggesting phase"
+    );
   }
 
   // Check if suggestion deadline has passed
   const now = new Date();
   if (cycle.suggestion_deadline <= now) {
-    throw new ForbiddenError('Suggestion deadline has passed');
+    throw new ForbiddenError("Suggestion deadline has passed");
   }
 
   // Validate required fields if they're being updated
   const finalTitle = title !== undefined ? title : existingSuggestion.title;
   const finalAuthor = author !== undefined ? author : existingSuggestion.author;
-  
+
   if (!finalTitle || !finalAuthor) {
-    throw new ValidationError('Title and author are required');
+    throw new ValidationError("Title and author are required");
   }
 
   // Build update object with only provided fields
@@ -236,10 +259,10 @@ export async function updateBookSuggestion(
 
   // Update the suggestion
   const updatedSuggestion = await db
-    .updateTable('book_suggestions')
+    .updateTable("book_suggestions")
     .set(updateData)
-    .where('id', '=', suggestionId)
-    .where('user_id', '=', userId)
+    .where("id", "=", suggestionId)
+    .where("user_id", "=", userId)
     .returningAll()
     .executeTakeFirstOrThrow();
 
