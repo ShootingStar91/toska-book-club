@@ -5,6 +5,9 @@ import typescriptParser from '@typescript-eslint/parser';
 export default [
   js.configs.recommended,
   {
+    ignores: ['generate-password-hash.js'],
+  },
+  {
     files: ['**/*.ts', '**/*.tsx'],
     plugins: {
       '@typescript-eslint': typescript,
