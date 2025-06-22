@@ -29,7 +29,7 @@ export function LoginForm({ onLoginSuccess, onShowRegistration }: LoginFormProps
   };
 
   return (
-    <div className="max-w-md w-full space-y-8" style={{ margin: '0 2px' }}>
+    <div className="max-w-md w-full space-y-8 px-4">
       <div className="text-center" style={{ marginBottom: '32px' }}>
         <h2 className="text-gray-200 text-2xl font-semibold">Sign in to your account</h2>
       </div>
