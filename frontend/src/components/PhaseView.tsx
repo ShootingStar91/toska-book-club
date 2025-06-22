@@ -43,7 +43,7 @@ export function PhaseView({ user }: PhaseViewProps) {
   return (
     <div className="w-full max-w-4xl">
       {/* Main Content */}
-      <main className={`px-4 py-6 sm:px-6 text-center ${user.isAdmin ? 'pb-32' : ''}`}>
+      <main className={`px-4 py-6 sm:px-6 ${user.isAdmin ? 'pb-32' : ''}`}>
         {(error as { status?: number })?.status === 404 || !currentCycle ? (
           // No active cycle
           <div className="py-12">

@@ -152,93 +152,86 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span
-                          className={`text-lg font-bold ${
-                            isActualWinner
-                              ? 'text-yellow-400'
-                              : 'text-orange-400'
-                          }`}
-                        >
-                          #{index + 1}
-                        </span>
-                        <h4
-                          className={`text-lg font-medium ${
-                            isActualWinner ? 'text-yellow-100' : 'text-white'
-                          }`}
-                        >
-                          {suggestion.title}
-                        </h4>
-                        {isActualWinner && (
-                          <span className="bg-yellow-400 text-gray-900 px-2 py-1 rounded-full text-xs font-bold">
-                            WINNER
-                          </span>
-                        )}
-                        {isTiedForFirst && isTie && !isActualWinner && (
-                          <span className="bg-orange-400/20 text-orange-300 px-2 py-1 rounded-full text-xs font-medium border border-orange-400/50">
-                            TIED FOR 1ST
-                          </span>
-                        )}
-                      </div>
-
-                      <p className="text-gray-300 mb-3">
-                        by {suggestion.author}
-                      </p>
-
-                      <div className="flex flex-wrap gap-3 text-sm text-gray-400 mb-3">
-                        {suggestion.year && (
-                          <span>Year: {suggestion.year}</span>
-                        )}
-                        {suggestion.pageCount && (
-                          <span>Pages: {suggestion.pageCount}</span>
-                        )}
-                      </div>
-
-                      {suggestion.link && (
-                        <a
-                          href={suggestion.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-orange-400 hover:text-orange-300 text-sm inline-block mb-2"
-                        >
-                          {formatUrlForDisplay(suggestion.link)}
-                        </a>
-                      )}
-
-                      {suggestion.miscInfo && (
-                        <p className="text-gray-400 text-sm">
-                          {suggestion.miscInfo}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="ml-6 text-right">
-                      <div
-                        className={`text-2xl font-bold ${
-                          isActualWinner ? 'text-yellow-400' : 'text-orange-400'
+                  <div className="space-y-3">
+                    {/* First row: Position and Vote count */}
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={`text-lg font-bold ${
+                          isActualWinner
+                            ? 'text-yellow-400'
+                            : 'text-orange-400'
                         }`}
                       >
-                        {result.voteCount}
-                      </div>
-                      <div className="text-sm text-gray-400">
-                        {result.voteCount === 1 ? 'vote' : 'votes'}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        ({percentage}%)
-                      </div>
-
-                      {/* Vote percentage bar */}
-                      <div className="w-20 h-2 bg-gray-700 rounded-full mt-2">
-                        <div
-                          className={`h-full rounded-full transition-all ${
-                            isActualWinner ? 'bg-yellow-400' : 'bg-orange-500'
+                        #{index + 1}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-lg font-bold ${
+                            isActualWinner ? 'text-yellow-400' : 'text-orange-400'
                           }`}
-                          style={{ width: `${percentage}%` }}
-                        />
+                        >
+                          {result.voteCount}
+                        </span>
+                        <span className="text-sm text-gray-400">
+                          {result.voteCount === 1 ? 'vote' : 'votes'}
+                        </span>
                       </div>
                     </div>
+
+                    {/* Second row: Title and badges */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4
+                        className={`text-lg font-medium leading-tight ${
+                          isActualWinner ? 'text-yellow-100' : 'text-white'
+                        }`}
+                      >
+                        {suggestion.title}
+                      </h4>
+                      {isActualWinner && (
+                        <span className="bg-yellow-400 text-gray-900 px-2 py-1 rounded-full text-xs font-bold">
+                          WINNER
+                        </span>
+                      )}
+                      {isTiedForFirst && isTie && !isActualWinner && (
+                        <span className="bg-orange-400/20 text-orange-300 px-2 py-1 rounded-full text-xs font-medium border border-orange-400/50">
+                          TIED FOR 1ST
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Third row: Author */}
+                    <p className="text-gray-300">
+                      by {suggestion.author}
+                    </p>
+
+                    {/* Fourth row: Year and Pages */}
+                    <div className="flex flex-wrap gap-3 text-sm text-gray-400">
+                      {suggestion.year && (
+                        <span>Year: {suggestion.year}</span>
+                      )}
+                      {suggestion.pageCount && (
+                        <span>Pages: {suggestion.pageCount}</span>
+                      )}
+                    </div>
+
+                    {/* Fifth row: Link */}
+                    {suggestion.link && (
+                      <a
+                        href={suggestion.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-orange-400 hover:text-orange-300 text-sm inline-block"
+                      >
+                        {formatUrlForDisplay(suggestion.link)}
+                      </a>
+                    )}
+
+                    {/* Sixth row: Misc info */}
+                    {suggestion.miscInfo && (
+                      <p className="text-gray-400 text-sm">
+                        {suggestion.miscInfo}
+                      </p>
+                    )}
                   </div>
                 </div>
               );

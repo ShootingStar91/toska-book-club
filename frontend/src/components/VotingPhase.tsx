@@ -360,7 +360,7 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
                         </p>
                       )}
 
-                      <div className="flex flex-wrap gap-3 text-sm text-gray-400 justify-center">
+                      <div className="flex flex-wrap gap-3 text-sm text-gray-400">
                         {suggestion.year && (
                           <span>Year: {suggestion.year}</span>
                         )}
