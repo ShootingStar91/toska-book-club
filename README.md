@@ -32,9 +32,14 @@ See full list: [docs/feats.md](docs/feats.md)
 
 ## 🧰 Commands
 
+:rocket: To initialize the app, first run `npm run dev` and then run migrations with `npm run migrate:up` (in the project root).
+
+Then initialize some data with for example `npm run init-suggesting` and login with `admin - admin123`
+
 ### 🔄 Development
 
-- `npm run dev` – Start backend & frontend (with Docker)
+- `npm run dev` – Start backend & frontend containers (and db) in development mode
+- `npm start` Start compiled versions, no hot reload
 - `npm run install:backend` – Install backend deps inside Docker
 - `npm run install:frontend` – Install frontend deps inside Docker
 
@@ -50,6 +55,7 @@ See full list: [docs/feats.md](docs/feats.md)
 - `npm test` – Run tests in watch mode
 - `npm run test:run` – Run all tests once
 - `npm run test:api` – Run backend tests
+- Init test data with `npm run init-suggesting` or `init-voting` or `init-results`. They will have the voting cycle in a specific state.
 
 ### Tips
 
