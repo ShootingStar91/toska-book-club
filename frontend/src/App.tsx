@@ -57,7 +57,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-gray-900 flex flex-col">
         <Header user={user} onLogout={user ? handleLogout : undefined} />
-        <div className="flex-1 flex items-start justify-center pt-16 px-0 py-4 sm:px-4">
+        <div className="flex-1 flex items-start justify-center pt-4 px-0 py-4 sm:px-4">
           {user ? (
             <PhaseView user={user} />
           ) : showRegistration ? (
