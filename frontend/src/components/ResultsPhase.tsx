@@ -5,7 +5,7 @@ import type { VotingCycle, VoteResult, BookSuggestion } from '../shared-types';
 // Helper function to format URL for display
 const formatUrlForDisplay = (url: string): string => {
   const cleanUrl = url.replace(/^https?:\/\//, '');
-  return cleanUrl.length > 20 ? cleanUrl.substring(0, 20) + '...' : cleanUrl;
+  return cleanUrl.length > 30 ? cleanUrl.substring(0, 30) + '...' : cleanUrl;
 };
 
 interface ResultsPhaseProps {
@@ -123,7 +123,7 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
                   key={result.bookSuggestionId}
                   className={`relative p-4 rounded-lg border transition-all ${
                     isActualWinner
-                      ? 'border-yellow-400 bg-yellow-400/10 shadow-lg'
+                      ? 'border-yellow-400 bg-gradient-to-br from-yellow-400/30 via-amber-400/25 to-orange-400/20 shadow-lg ring-2 ring-yellow-400/50'
                       : isTiedForFirst && isTie
                         ? 'border-orange-400/70 bg-orange-400/5'
                         : 'border-gray-600 bg-gray-700/50'
@@ -148,7 +148,7 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
                     </div>
                   )}
 
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {/* First row: Position and Vote count */}
                     <div className="flex items-center justify-between">
                       <span
@@ -156,7 +156,7 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
                           isActualWinner ? 'text-yellow-400' : 'text-orange-400'
                         }`}
                       >
-                        #{index + 1}
+                        #{index + 1}{isActualWinner && ' 🎉'}
                       </span>
                       <div className="flex items-center gap-2">
                         <span
@@ -198,32 +198,35 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
                     {/* Third row: Author */}
                     <p className="text-gray-300">by {suggestion.author}</p>
 
-                    {/* Fourth row: Year and Pages */}
-                    <div className="flex flex-wrap gap-3 text-sm text-gray-400">
-                      {suggestion.year && <span>Year: {suggestion.year}</span>}
-                      {suggestion.pageCount && (
-                        <span>Pages: {suggestion.pageCount}</span>
+                    {/* Bottom section: Year/Pages, Link, Description - closer together */}
+                    <div className="space-y-1">
+                      {/* Year and Pages */}
+                      <div className="flex flex-wrap gap-3 text-sm text-gray-400">
+                        {suggestion.year && <span>Year: {suggestion.year}</span>}
+                        {suggestion.pageCount && (
+                          <span>Pages: {suggestion.pageCount}</span>
+                        )}
+                      </div>
+
+                      {/* Link */}
+                      {suggestion.link && (
+                        <a
+                          href={suggestion.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-orange-400 hover:text-orange-300 text-sm inline-block"
+                        >
+                          {formatUrlForDisplay(suggestion.link)}
+                        </a>
+                      )}
+
+                      {/* Misc info */}
+                      {suggestion.miscInfo && (
+                        <p className="text-gray-400 text-sm">
+                          {suggestion.miscInfo}
+                        </p>
                       )}
                     </div>
-
-                    {/* Fifth row: Link */}
-                    {suggestion.link && (
-                      <a
-                        href={suggestion.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-orange-400 hover:text-orange-300 text-sm inline-block"
-                      >
-                        {formatUrlForDisplay(suggestion.link)}
-                      </a>
-                    )}
-
-                    {/* Sixth row: Misc info */}
-                    {suggestion.miscInfo && (
-                      <p className="text-gray-400 text-sm">
-                        {suggestion.miscInfo}
-                      </p>
-                    )}
                   </div>
                 </div>
               );
@@ -243,14 +246,6 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
             </div>
           )}
 
-          {!isTie && actualWinner && maxVotes > 0 && (
-            <div className="mt-6 p-4 bg-yellow-900/20 border border-yellow-400/50 rounded-lg">
-              <p className="text-yellow-300 font-medium text-center">
-                🎉 Congratulations! "{actualWinner.suggestion!.title}" wins with{' '}
-                {maxVotes} {maxVotes === 1 ? 'vote' : 'votes'}!
-              </p>
-            </div>
-          )}
         </div>
       )}
     </div>
