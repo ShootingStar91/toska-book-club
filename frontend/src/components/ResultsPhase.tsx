@@ -117,10 +117,6 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
                 (w) => w.bookSuggestionId === result.bookSuggestionId
               );
               const suggestion = result.suggestion!;
-              const percentage =
-                totalVotes > 0
-                  ? Math.round((result.voteCount / totalVotes) * 100)
-                  : 0;
 
               return (
                 <div
