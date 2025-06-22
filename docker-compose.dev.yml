@@ -8,11 +8,8 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
-    environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgres://postgres:password@database:5432/toska_book_club
-      - JWT_SECRET=dev-jwt-secret-key
-      - REGISTRATION_SECRET=valid-secret
+    env_file:
+      - .env.test
     command: npm run dev
     depends_on:
       - database
@@ -40,7 +37,6 @@ services:
       - POSTGRES_PASSWORD=password
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/init-test-data.sql:/docker-entrypoint-initdb.d/init-test-data.sql
 
 volumes:
   postgres_data:
