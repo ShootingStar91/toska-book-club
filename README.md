@@ -52,6 +52,7 @@ Then initialize some data with for example `npm run init-suggesting` and login w
 
 ### ✅ Tests
 
+- Database has to be running for the tests to work.
 - `npm test` – Run tests in watch mode
 - `npm run test:run` – Run all tests once
 - `npm run test:api` – Run backend tests
