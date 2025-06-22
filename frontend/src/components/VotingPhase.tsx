@@ -134,6 +134,25 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
     setDraggedIndex(null);
   };
 
+  // Move item up/down functions for mobile
+  const moveItemUp = (index: number) => {
+    if (index === 0) return;
+    const newRankedBookIds = [...rankedBookIds];
+    const temp = newRankedBookIds[index];
+    newRankedBookIds[index] = newRankedBookIds[index - 1];
+    newRankedBookIds[index - 1] = temp;
+    setRankedBookIds(newRankedBookIds);
+  };
+
+  const moveItemDown = (index: number) => {
+    if (index === rankedBookIds.length - 1) return;
+    const newRankedBookIds = [...rankedBookIds];
+    const temp = newRankedBookIds[index];
+    newRankedBookIds[index] = newRankedBookIds[index + 1];
+    newRankedBookIds[index + 1] = temp;
+    setRankedBookIds(newRankedBookIds);
+  };
+
   if (suggestionsLoading || votesLoading) {
     return (
       <div className="space-y-6">
@@ -156,8 +175,8 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
         {isRankingMode ? (
           <div className="text-gray-300 mb-4 space-y-2">
             <p>
-              <strong>Ranking Voting:</strong> Drag and drop the books to rank them from best to worst.
-              The book at the top gets the most points, the book at the bottom gets the least.
+              <strong>Ranking Voting:</strong> Drag and drop the books to rank them from best to worst, 
+              or use the up/down arrow buttons. The book at the top gets the most points, the book at the bottom gets the least.
             </p>
             <p className="text-sm text-gray-400">
               Point distribution: {suggestions.filter(s => s.userId !== user.id).length > 0 && 
@@ -235,30 +254,70 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
                       onDragOver={handleDragOver}
                       onDrop={(e) => handleDrop(e, index)}
                       onDragEnd={handleDragEnd}
-                      className={`p-3 rounded-lg border transition-all cursor-move ${
+                      className={`p-4 rounded-lg border transition-all cursor-move ${
                         draggedIndex === index
                           ? 'border-orange-500 bg-orange-500/20 opacity-50'
                           : 'border-gray-600 bg-gray-800 hover:border-orange-400'
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="flex flex-col items-center text-sm">
-                            <span className="text-orange-400 font-bold">#{index + 1}</span>
-                            <span className="text-gray-400 text-xs">{points}pts</span>
+                      <div className="space-y-3">
+                        {/* Top row: Position/Points and Up/Down buttons */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-orange-400 font-bold text-lg">#{index + 1}</span>
+                            <span className="text-gray-400 text-sm">({points} pts)</span>
                           </div>
-                          <div className="text-gray-400">
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                            </svg>
-                          </div>
-                          <div>
-                            <h5 className="text-white font-medium">{suggestion.title}</h5>
-                            <p className="text-gray-300 text-sm">by {suggestion.author}</p>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                moveItemUp(index);
+                              }}
+                              disabled={index === 0}
+                              className="p-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-gray-300 hover:text-white transition-all"
+                              title="Move up"
+                            >
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                moveItemDown(index);
+                              }}
+                              disabled={index === rankedBookIds.length - 1}
+                              className="p-1 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-gray-300 hover:text-white transition-all"
+                              title="Move down"
+                            >
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                              </svg>
+                            </button>
                           </div>
                         </div>
-                        <div className="text-gray-400 text-sm">
-                          {suggestion.year && <span>({suggestion.year})</span>}
+                        
+                        {/* Middle row: Title and Author */}
+                        <div>
+                          <h5 className="text-white font-medium text-lg leading-tight">{suggestion.title}</h5>
+                          <p className="text-gray-300 text-sm mt-1">by {suggestion.author}</p>
+                        </div>
+                        
+                        {/* Bottom row: Year, Pages, Link */}
+                        <div className="flex flex-wrap gap-4 text-sm text-gray-400">
+                          {suggestion.year && <span>Year: {suggestion.year}</span>}
+                          {suggestion.pageCount && <span>Pages: {suggestion.pageCount}</span>}
+                          {suggestion.link && (
+                            <a
+                              href={suggestion.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-orange-400 hover:text-orange-300 underline"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {formatUrlForDisplay(suggestion.link)}
+                            </a>
+                          )}
                         </div>
                       </div>
                     </div>
