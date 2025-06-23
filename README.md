@@ -55,7 +55,7 @@ Then initialize some data with for example `npm run init-suggesting` and login w
 - Database has to be running for the tests to work.
 - `npm test` – Run tests in watch mode
 - `npm run test:run` – Run all tests once
-- `npm run test:api` – Run backend tests
+- `npm run test:ui` – Open vitest UI
 - Init test data with `npm run init-suggesting` or `init-voting` or `init-results`. They will have the voting cycle in a specific state.
 
 ### Tips
