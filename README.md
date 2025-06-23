@@ -67,7 +67,7 @@ Then initialize some data with for example `npm run init-suggesting` and login w
 ### Deploying
 
 - The production-versions Dockerfiles are `frontend/Dockerfile` and `backend/Dockerfile`.
-- Also, those need the envs for connecting to a Postgres-database.
+- Also, backend needs a Postgres-database to connect to.
 - Backend envs:
   - `DATABASE_URL` - connection url to the DB
   - `JWT_SECRET`
