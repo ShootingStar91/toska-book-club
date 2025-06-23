@@ -1,5 +1,5 @@
 services:
-  backend:
+  backend-prod:
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -10,7 +10,7 @@ services:
     depends_on:
       - database
 
-  frontend:
+  frontend-prod:
     build:
       context: ./frontend
       dockerfile: Dockerfile
