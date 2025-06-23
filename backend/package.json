@@ -9,6 +9,8 @@
     "dev": "tsx watch src/server.ts",
     "migrate:up": "tsx src/migrate.ts up",
     "migrate:down": "tsx src/migrate.ts down",
+    "migrate:up:prod": "node dist/src/migrate.js up",
+    "migrate:down:prod": "node dist/src/migrate.js down",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "typecheck": "tsc --noEmit"

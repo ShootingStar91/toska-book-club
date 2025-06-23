@@ -45,7 +45,7 @@ Then initialize some data with for example `npm run init-suggesting` and login w
 
 ### 🗃️ Database
 
-- `npm run migrate:up` – Run latest DB migrations
+- `npm run migrate:up` – Run latest DB migrations (works in dev container setup only)
 - `npm run migrate:down` – Revert last DB migration
 - `npm run init-test-data` – Load test data into DB
 - `npm run pgcli` – Open Postgres CLI (requires [pgcli](https://github.com/dbcli/pgcli) to be installed). `password` is the password
@@ -72,6 +72,7 @@ Then initialize some data with for example `npm run init-suggesting` and login w
   - `DATABASE_URL` - connection url to the DB
   - `JWT_SECRET`
   - `REGISTRATION_SECRET` - make this some easy-to-type word, and give it to the book club
+- Run migrations by going into the backend container and running `npm run migrate:up:prod`
 
 ---
 
