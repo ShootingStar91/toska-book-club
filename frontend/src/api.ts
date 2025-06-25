@@ -27,7 +27,17 @@ interface RegisterResponse {
 }
 import { getValidToken } from './auth';
 
-const API_BASE_URL = 'http://localhost:3000';
+/// <reference types="vite/client" />
+interface ImportMetaEnv {
+  readonly VITE_API_URL: string;
+  // add more env vars here
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
+const API_BASE_URL = (import.meta as unknown as ImportMeta).env.VITE_API_URL as string;
 
 class ApiError extends Error {
   constructor(
