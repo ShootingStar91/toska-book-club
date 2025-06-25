@@ -8,7 +8,10 @@ RUN npm install -g serve
 
 COPY . .
 
-RUN npx vite build
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
+RUN npx vite build --mode production
 
 EXPOSE 3000
 
