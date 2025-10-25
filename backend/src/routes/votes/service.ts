@@ -2,11 +2,20 @@ import { db } from "../../database";
 import { NewVote } from "../../database";
 import { ValidationError, NotFoundError, ForbiddenError } from "../../errors";
 
+export type AcualToskaPoint = 'want-to-read' | 'could-read' | 'wont-read';
+
+export interface AcualToskaPoints {
+  bookSuggestionId: string;
+  points: AcualToskaPoint;
+}
+
 export interface SubmitVotesRequest {
   // For normal mode (backward compatibility)
   bookSuggestionIds?: string[];
   // For ranking mode - books ordered from best (most points) to worst (least points)
   orderedBookIds?: string[];
+  // For acual-toska-method
+  acualToskaPoints?: AcualToskaPoints[];
 }
 
 export interface VoteResponse {
@@ -22,7 +31,7 @@ export async function submitVotes(
   userId: string,
   data: SubmitVotesRequest
 ): Promise<VoteResponse[]> {
-  const { bookSuggestionIds, orderedBookIds } = data;
+  const { bookSuggestionIds, orderedBookIds, acualToskaPoints } = data;
 
   // Get current active voting cycle
   const currentCycle = await db
@@ -54,6 +63,13 @@ export async function submitVotes(
       currentCycle.id,
       orderedBookIds
     );
+  }
+  else if (currentCycle.voting_mode === "acual-toska-method")  {
+    return await handleAcualToskaModeVoting(
+      userId,
+      currentCycle.id,
+      acualToskaPoints
+    )    
   } else {
     return await handleNormalModeVoting(
       userId,
@@ -192,6 +208,56 @@ async function handleRankingModeVoting(
   });
 }
 
+function getAcualToskaPoints(acualToskaPoints: AcualToskaPoint) {
+  if (acualToskaPoints === 'want-to-read') return 3;
+  if (acualToskaPoints === 'could-read') return 2;
+  return 0;
+}
+
+async function handleAcualToskaModeVoting(
+  userId: string,
+  cycleId: string,
+  acualToskaPoints?: AcualToskaPoints[]
+): Promise<VoteResponse[]> {
+  if (!acualToskaPoints) {
+    throw new ValidationError("Acual toska mode requires acual toska points");
+  }
+
+  // Use a transaction to ensure atomicity
+  return await db.transaction().execute(async (trx) => {
+    // Remove all existing votes for this user and cycle
+    await trx
+      .deleteFrom("votes")
+      .where("user_id", "=", userId)
+      .where("voting_cycle_id", "=", cycleId)
+      .execute();
+
+    
+    const newVotes: NewVote[] = acualToskaPoints.map(
+      (atp) => ({
+        user_id: userId,
+        voting_cycle_id: cycleId,
+        book_suggestion_id: atp.bookSuggestionId,
+        points: getAcualToskaPoints(atp.points),
+      })
+    );
+
+    const createdVotes = await trx
+      .insertInto("votes")
+      .values(newVotes)
+      .returningAll()
+      .execute();
+
+    return createdVotes.map((vote) => ({
+      id: vote.id,
+      userId: vote.user_id,
+      votingCycleId: vote.voting_cycle_id,
+      bookSuggestionId: vote.book_suggestion_id,
+      points: vote.points,
+      createdAt: vote.created_at.toISOString(),
+    }));
+  });
+}
 async function validateBookSuggestionIds(
   bookSuggestionIds: string[],
   cycleId: string

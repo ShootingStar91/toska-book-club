@@ -1,5 +1,6 @@
 import { Kysely, PostgresDialect, Generated, Insertable, Selectable, Updateable } from 'kysely';
 import { Pool } from 'pg';
+import { VotingMode } from '../../frontend/src/shared-types';
 
 export interface Database {
   users: UsersTable;
@@ -23,7 +24,7 @@ export interface VotingCyclesTable {
   suggestion_deadline: Date;
   voting_deadline: Date;
   status: Generated<'suggesting' | 'voting' | 'completed'>;
-  voting_mode: Generated<'normal' | 'ranking'>;
+  voting_mode: Generated<VotingMode>;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
 }

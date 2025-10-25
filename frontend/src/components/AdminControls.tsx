@@ -11,10 +11,10 @@ interface AdminControlsProps {
 export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsProps) {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
-  
+
   // Determine if we're editing or creating
   const isEditing = currentCycle && currentCycle.status !== 'completed';
-  
+
   // Form data for both create and edit
   const [formData, setFormData] = useState<CreateVotingCycleRequest | UpdateVotingCycleRequest>({
     suggestionDeadline: '',
@@ -28,7 +28,7 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
       // Convert ISO strings to date format (YYYY-MM-DD)
       const suggestionDate = new Date(currentCycle.suggestionDeadline);
       const votingDate = new Date(currentCycle.votingDeadline);
-      
+
       setFormData({
         suggestionDeadline: suggestionDate.toISOString().slice(0, 10),
         votingDeadline: votingDate.toISOString().slice(0, 10),
@@ -59,7 +59,7 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.suggestionDeadline || !formData.votingDeadline) {
       return;
     }
@@ -68,7 +68,7 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
     const suggestionDate = new Date(formData.suggestionDeadline);
     suggestionDate.setHours(23, 59, 59, 999);
     const suggestionISOString = suggestionDate.toISOString();
-    
+
     const votingDate = new Date(formData.votingDeadline);
     votingDate.setHours(23, 59, 59, 999);
     const votingISOString = votingDate.toISOString();
@@ -118,10 +118,10 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
               onClick={handleShowForm}
               className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-md font-medium transition-colors flex items-center gap-2"
             >
-            {isEditing ? 'Edit Current Cycle' : 'Start New Voting Cycle'}
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-            </svg>
+              {isEditing ? 'Edit Current Cycle' : 'Start New Voting Cycle'}
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+              </svg>
             </button>
           </div>
         ) : (
@@ -217,6 +217,22 @@ export function AdminControls({ currentCycle, onCycleCreated }: AdminControlsPro
                         <span className="block text-gray-400 text-sm mt-1">Users rank all books from best to worst by dragging</span>
                       </span>
                     </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="votingMode"
+                        value="acual-toska-method"
+                        checked={formData.votingMode === 'acual-toska-method'}
+                        onChange={(e) => setFormData({ ...formData, votingMode: e.target.value as 'acual-toska-method' })}
+                        className="w-4 h-4 text-orange-600 bg-gray-600 border-gray-500 focus:ring-orange-500 focus:ring-2"
+                        disabled={currentMutation.isPending}
+                      />
+                      <span className="ml-3 text-gray-300">
+                        <span className="font-medium text-base">Acual Toska Method Voting</span>
+                        <span className="block text-gray-400 text-sm mt-1">Users select if they'd prefer a book, be willing to read it if others prefer it, or not willing at all.</span>
+                      </span>
+                    </label>
+
                   </div>
                 </div>
               )}

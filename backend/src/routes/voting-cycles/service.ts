@@ -1,3 +1,4 @@
+import { VotingMode } from "../../../../frontend/src/shared-types";
 import { db } from "../../database";
 import { NewVotingCycle } from "../../database";
 import {
@@ -10,13 +11,13 @@ import {
 export interface CreateVotingCycleRequest {
   suggestionDeadline: string; // ISO date string
   votingDeadline: string; // ISO date string
-  votingMode: "normal" | "ranking";
+  votingMode: VotingMode;
 }
 
 export interface UpdateVotingCycleRequest {
   suggestionDeadline?: string; // ISO date string
   votingDeadline?: string; // ISO date string
-  votingMode?: "normal" | "ranking";
+  votingMode?: VotingMode;
 }
 
 export interface VotingCycleResponse {
@@ -24,7 +25,7 @@ export interface VotingCycleResponse {
   suggestionDeadline: string;
   votingDeadline: string;
   status: "suggesting" | "voting" | "completed";
-  votingMode: "normal" | "ranking";
+  votingMode: VotingMode;
   createdAt: string;
   updatedAt: string;
 }

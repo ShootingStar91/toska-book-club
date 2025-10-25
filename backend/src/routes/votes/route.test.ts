@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { votesRoute } from './route';
 import { createTestUser } from '../../test-setup';
 import { testDb } from '../../test-database';
+import { type VotingMode } from '../../../../frontend/src/shared-types'
 import { errorHandler } from '../../middleware/logging';
 import bcrypt from 'bcrypt';
 
@@ -40,7 +41,7 @@ describe('Votes Routes', () => {
     return { user, token };
   }
 
-  async function createVotingCycle(status: 'suggesting' | 'voting' | 'completed' = 'voting', votingMode: 'normal' | 'ranking' = 'normal') {
+  async function createVotingCycle(status: 'suggesting' | 'voting' | 'completed' = 'voting', votingMode: VotingMode = 'normal') {
     const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const dayAfterTomorrow = new Date(Date.now() + 48 * 60 * 60 * 1000);
 

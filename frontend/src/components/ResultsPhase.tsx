@@ -53,7 +53,7 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
     if (b.voteCount !== a.voteCount) {
       return b.voteCount - a.voteCount;
     }
-    return a.suggestion.title.localeCompare(b.suggestion.title);
+    return a.suggestion.title.localeCompare(b.suggestion.id);
   });
 
   // Determine winner(s) - books with the highest vote count

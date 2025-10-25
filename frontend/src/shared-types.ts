@@ -1,11 +1,29 @@
 // Shared types for frontend and backend
 
+export type AcualToskaPoint = 'want-to-read' | 'could-read' | 'wont-read';
+
+export interface AcualToskaPoints {
+  bookSuggestionId: string;
+  points: AcualToskaPoint;
+}
+
+export interface SubmitVotesRequest {
+  // For normal mode (backward compatibility)
+  bookSuggestionIds?: string[];
+  // For ranking mode - books ordered from best (most points) to worst (least points)
+  orderedBookIds?: string[];
+  // For acual-toska-method
+  acualToskaPoints?: AcualToskaPoints[];
+}
+
+export type VotingMode = 'normal' | 'ranking' | 'acual-toska-method';
+
 export interface VotingCycle {
   id: string;
   suggestionDeadline: string;
   votingDeadline: string;
   status: 'suggesting' | 'voting' | 'completed';
-  votingMode: 'normal' | 'ranking';
+  votingMode: VotingMode;
   createdAt: string;
   updatedAt: string;
 }
@@ -76,13 +94,13 @@ export interface LoginResponse {
 export interface CreateVotingCycleRequest {
   suggestionDeadline: string;
   votingDeadline: string;
-  votingMode: 'normal' | 'ranking';
+  votingMode: VotingMode;
 }
 
 export interface UpdateVotingCycleRequest {
   suggestionDeadline?: string;
   votingDeadline?: string;
-  votingMode?: 'normal' | 'ranking';
+  votingMode?: VotingMode;
 }
 
 export interface SubmitVotesRequest {
