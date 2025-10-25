@@ -140,9 +140,9 @@ export function SuggestingPhase({ cycle }: SuggestingPhaseProps) {
           Submit your book suggestions for this voting cycle.
         </p>
         <div className="text-sm text-gray-400">
-          <p>Suggestion deadline: {suggestionDeadline.toLocaleString('fi-FI')}</p>
+          <p>Suggestion phase ends: <b>{suggestionDeadline.toLocaleString('fi-FI')}</b></p>
           <p>
-            Voting starts: {new Date(cycle.votingDeadline).toLocaleString('fi-FI')}
+            Voting ends at: <b>{new Date(cycle.votingDeadline).toLocaleString('fi-FI')}</b>
           </p>
         </div>
         {isDeadlinePassed && (
