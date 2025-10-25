@@ -257,21 +257,19 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
                           name={`toska-${suggestion.id}`}
                           value={option}
                           checked={currentSelection === option}
+
                           onChange={() =>
                             handleAcualToskaChange(
                               suggestion.id,
                               option as 'want-to-read' | 'could-read' | 'wont-read'
                             )
                           }
-                          className="text-orange-500 focus:ring-orange-500"
                         />
-                        <span>
-                          {option === 'want-to-read'
-                            ? 'Want to read'
-                            : option === 'could-read'
-                              ? 'Could read'
-                              : 'Won’t read'}
-                        </span>
+                        {option === 'want-to-read'
+                          ? <span className="text-orange-300">Want to read!</span>
+                          : option === 'could-read'
+                            ? <span className="text-white">Could read</span>
+                            : <span className="text-gray-400">Won't read</span>}
                       </label>
                     ))}
                   </div>
@@ -375,7 +373,7 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
                             <p className="text-gray-300 text-sm mt-1">by {suggestion.author}</p>
                           </div>
 
-                        <div>{suggestion.miscInfo}</div>
+                          <div>{suggestion.miscInfo}</div>
 
                           {/* Bottom row: Year, Pages, Link */}
                           <div className="flex flex-wrap gap-4 text-sm text-gray-400">
