@@ -210,9 +210,9 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
             </p>
           </div>
         ) : isAcualToskaMode ? <p className="text-gray-300 mb-4">
-          Select if you want to read the book, or are willing to read if others choose it, or if you absolutely wont read the book.
-          These give respectively 3, 2 and 0 "points" to the book.
-          Remember to click Submit votes when you are ready.
+          <p className="py-2">For each book, select if you want to read the book, or are willing to read if others choose it, or if you absolutely will not read the book.</p>
+          <p className="py-2">These give respectively 3, 2 and 0 "points" to the book.</p>
+          <p className="py-2"> Remember to click Submit votes when you are ready.</p>
         </p> : (
           <p className="text-gray-300 mb-4">
             Vote for all the books that you'd like to read by clicking them.
@@ -500,22 +500,24 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
 
         {suggestions.length > 0 && (
           <div className="mt-6 pt-4 border-t border-gray-700">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4 items-center justify-between">
               {isRankingMode ? (
                 <p className="text-gray-300">
                   Ranked: {rankedBookIds.length} book
                   {rankedBookIds.length !== 1 ? 's' : ''}
                 </p>
-              ) : (
+              ) : !isAcualToskaMode ? (
                 <p className="text-gray-300">
                   Selected: {selectedBookIds.length} book
                   {selectedBookIds.length !== 1 ? 's' : ''}
-                </p>
-              )}
+                </p>)
+                : Object.keys(acualToskaPoints).length < suggestions.length && <p className="text-gray-300">Give your vote on all books before submitting!</p>
+              }
 
               <button
                 onClick={handleSubmitVotes}
-                disabled={submitVotesMutation.isPending || (isRankingMode && rankedBookIds.length === 0)}
+                disabled={submitVotesMutation.isPending || (isRankingMode && rankedBookIds.length === 0) || isAcualToskaMode && Object.keys(acualToskaPoints).length < suggestions.length}
+
                 className="bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-2 rounded-md font-medium transition-colors flex items-center gap-2"
               >
                 {submitVotesMutation.isPending
