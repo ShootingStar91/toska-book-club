@@ -47,6 +47,7 @@ export interface Vote {
   userId: string;
   votingCycleId: string;
   bookSuggestionId: string;
+  points: number;
   createdAt: string;
 }
 
