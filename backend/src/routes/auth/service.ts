@@ -60,7 +60,7 @@ export async function authenticateUser(username: string, password: string): Prom
       isAdmin: user.is_admin,
     },
     JWT_SECRET,
-    { expiresIn: '12h' }
+    { expiresIn: '120d' }
   );
 
   return {
