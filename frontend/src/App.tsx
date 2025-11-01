@@ -10,6 +10,8 @@ import { PhaseView } from './components/PhaseView';
 import './App.css';
 import type { User } from './shared-types';
 
+console.log("version 0.0.1");
+
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
