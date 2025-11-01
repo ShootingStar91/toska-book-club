@@ -209,11 +209,11 @@ export function VotingPhase({ cycle, user }: VotingPhaseProps) {
                  and so on down to 0 points for the last book.`}
             </p>
           </div>
-        ) : isAcualToskaMode ? <p className="text-gray-300 mb-4">
+        ) : isAcualToskaMode ? <div className="text-gray-300 mb-4">
           <p className="py-2">For each book, select if you want to read the book, or are willing to read if others choose it, or if you absolutely will not read the book.</p>
           <p className="py-2">These give respectively 3, 2 and 0 "points" to the book.</p>
           <p className="py-2"> Remember to click Submit votes when you are ready.</p>
-        </p> : (
+        </div> : (
           <p className="text-gray-300 mb-4">
             Vote for all the books that you'd like to read by clicking them.
             Finally, click the Submit votes button. You can update your votes
