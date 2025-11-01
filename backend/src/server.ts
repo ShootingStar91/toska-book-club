@@ -5,6 +5,9 @@ import { votingCyclesRoute } from "./routes/voting-cycles/route";
 import { bookSuggestionsRoute } from "./routes/book-suggestions/route";
 import { votesRoute } from "./routes/votes/route";
 import { onRequestLogger, onResponseLogger, errorHandler } from "./middleware/logging";
+import { db } from "./database";
+import { migrateToLatest } from "./migrate";
+import { sleep } from "./util";
 
 const HOST = "0.0.0.0";
 const PORT = 3000;
@@ -29,6 +32,20 @@ server.register(bookSuggestionsRoute, { prefix: '/book-suggestions' });
 server.register(votesRoute, { prefix: '/votes' });
 
 const start = async () => {
+  for (let attempt = 0; attempt < 100; attempt++) {
+    try {
+      await db.selectFrom('users').select('id').execute();
+      console.log("Db connection verified, migrating...");
+
+      await migrateToLatest(true);
+      console.log("Migration done");
+      break;
+    } catch {
+      console.log("Db connection not up yet, attempts done ", attempt);
+      await sleep(5000);
+    }
+  }
+
   try {
     await server.listen({ port: PORT, host: HOST });
     console.log(`Server listening on http://${HOST}:${PORT}`);
@@ -37,6 +54,6 @@ const start = async () => {
     server.log.error(err);
     process.exit(1);
   }
-};
+}
 
 start();

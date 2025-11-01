@@ -3,7 +3,7 @@ import path from 'path';
 import { Migrator, FileMigrationProvider } from 'kysely';
 import { db } from './database';
 
-async function migrateToLatest() {
+export async function migrateToLatest(dontDestroy?: boolean) {
   const migrator = new Migrator({
     db,
     provider: new FileMigrationProvider({
@@ -28,7 +28,9 @@ async function migrateToLatest() {
     console.error(error);
     process.exit(1);
   }
-
+  if (dontDestroy) {
+    return;
+  }
   await db.destroy();
 }
 
