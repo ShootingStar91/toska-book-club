@@ -6,6 +6,9 @@ import { bookSuggestionsRoute } from "./routes/book-suggestions/route";
 import { votesRoute } from "./routes/votes/route";
 import { onRequestLogger, onResponseLogger, errorHandler } from "./middleware/logging";
 
+const HOST = "0.0.0.0";
+const PORT = 3000;
+
 const server = fastify({ logger: false });
 
 server.register(cors, {
@@ -27,8 +30,8 @@ server.register(votesRoute, { prefix: '/votes' });
 
 const start = async () => {
   try {
-    await server.listen({ port: 3000, host: "0.0.0.0" });
-    console.log("Server listening on http://0.0.0.0:3000");
+    await server.listen({ port: PORT, host: HOST });
+    console.log(`Server listening on http://${HOST}:${PORT}`);
   } catch (err) {
     console.error("Failed to start server:", err);
     server.log.error(err);
