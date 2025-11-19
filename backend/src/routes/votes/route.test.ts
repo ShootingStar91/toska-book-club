@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import { votesRoute } from './route';
 import { createTestUser } from '../../test-setup';
 import { testDb } from '../../test-database';
-import { type VotingMode } from '../../../../frontend/src/shared-types'
+import { type VotingMode } from '../../shared-types'
 import { errorHandler } from '../../middleware/logging';
 import bcrypt from 'bcrypt';
 

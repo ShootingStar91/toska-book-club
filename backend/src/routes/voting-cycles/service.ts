@@ -1,4 +1,4 @@
-import { VotingMode } from "../../../../frontend/src/shared-types";
+import { VotingMode } from "./../../shared-types";
 import { db } from "../../database";
 import { NewVotingCycle } from "../../database";
 import {

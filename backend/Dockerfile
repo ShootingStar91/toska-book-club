@@ -7,6 +7,7 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
+
 RUN npx tsc --outDir dist
 
 FROM node:22-alpine AS runtime

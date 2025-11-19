@@ -1,6 +1,6 @@
 import { Kysely, PostgresDialect, Generated, Insertable, Selectable, Updateable } from 'kysely';
 import { Pool } from 'pg';
-import { VotingMode } from '../../frontend/src/shared-types';
+import { VotingMode } from './shared-types';
 
 export interface Database {
   users: UsersTable;
