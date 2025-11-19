@@ -3,17 +3,22 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      platforms: 
+      - linux/amd64
     ports:
       - "3000:3000"
     env_file:
       - .env
     depends_on:
       - database
+    
 
   frontend-prod:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      platforms: 
+      - linux/amd64
       args:
         VITE_API_URL: http://localhost:3000
     ports:
