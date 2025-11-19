@@ -48,12 +48,12 @@ export function ResultsPhase({ cycle }: ResultsPhaseProps) {
     };
   });
 
-  // Sort by vote count (highest first), then by title for consistent ordering
+  // Sort by vote count (highest first), then by id for consistent ordering
   const sortedResults = allResults.sort((a, b) => {
     if (b.voteCount !== a.voteCount) {
       return b.voteCount - a.voteCount;
     }
-    return a.suggestion.title.localeCompare(b.suggestion.id);
+    return a.suggestion.id.localeCompare(b.suggestion.id);
   });
 
   // Determine winner(s) - books with the highest vote count
